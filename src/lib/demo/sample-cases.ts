@@ -1,7 +1,8 @@
 import { buildFallbackSoap } from "@/lib/ai/generate-soap";
 import { normalizeIntakeSubmission } from "@/lib/assessment/normalize-intake";
 import { scorePatterns } from "@/lib/assessment/score-patterns";
-import { type IntakeFormInput } from "@/lib/schemas/intake";
+import { type IntakeFormInput, type NormalizedIntake } from "@/lib/schemas/intake";
+import { type AssessmentResult, type SoapDraft } from "@/lib/schemas/soap";
 
 const sampleIntakes: IntakeFormInput[] = [
   {
@@ -88,7 +89,19 @@ const sampleIntakes: IntakeFormInput[] = [
   },
 ];
 
-export function buildSampleCases() {
+export type DashboardCase = {
+  id: string;
+  patient: NormalizedIntake["patient_info"];
+  chief_complaint: string;
+  normalized_intake: NormalizedIntake;
+  assessment: {
+    results: AssessmentResult[];
+  };
+  soap: SoapDraft;
+  submitted_at: string;
+};
+
+export function buildSampleCases(): DashboardCase[] {
   return sampleIntakes.map((raw, index) => {
     const normalized = normalizeIntakeSubmission(raw);
     const assessmentResults = scorePatterns(normalized);
@@ -96,14 +109,18 @@ export function buildSampleCases() {
 
     return {
       id: `demo-${index + 1}`,
-      patientName: `${normalized.patient_info.first_name} ${normalized.patient_info.last_name}`,
-      chiefComplaint: normalized.chief_complaint.primary_issue,
-      normalized,
-      assessmentResults,
+      patient: normalized.patient_info,
+      chief_complaint: normalized.chief_complaint.primary_issue,
+      normalized_intake: normalized,
+      assessment: {
+        results: assessmentResults,
+      },
       soap,
-      submittedAt: normalized.metadata.submitted_at,
+      submitted_at: normalized.metadata.submitted_at,
     };
   });
 }
 
-export type DashboardCase = ReturnType<typeof buildSampleCases>[number];
+export async function getSampleCases() {
+  return buildSampleCases();
+}
