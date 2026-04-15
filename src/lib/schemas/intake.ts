@@ -71,6 +71,12 @@ export const intakeFormSchema = z.object({
     .default({ source: "web" }),
 });
 
+export const appointmentRequestSchema = z.object({
+  preferred_day: z.string().trim().min(1, "Please choose a preferred day."),
+  preferred_time: z.string().trim().min(1, "Please choose a preferred time."),
+  notes: z.string().trim().max(500).default(""),
+});
+
 export const normalizedSymptomSchema = z.object({
   key: z.string(),
   label: z.string(),
@@ -129,3 +135,5 @@ export const normalizedIntakeSchema = z.object({
 export type IntakeFormInput = z.infer<typeof intakeFormSchema>;
 export type IntakeFormValues = z.input<typeof intakeFormSchema>;
 export type NormalizedIntake = z.infer<typeof normalizedIntakeSchema>;
+export type AppointmentRequestInput = z.infer<typeof appointmentRequestSchema>;
+export type AppointmentRequestValues = z.input<typeof appointmentRequestSchema>;

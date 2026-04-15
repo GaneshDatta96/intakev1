@@ -15,12 +15,12 @@ export default function Home() {
             <p className="section-label">Clinical Intake V1</p>
             <div className="space-y-4">
               <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                Intake to structured assessment to SOAP in one focused workflow.
+                Separate patient intake and practitioner review in one focused workflow.
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-[color:var(--muted)]">
-                This build keeps the scope intentionally narrow: capture the intake,
-                normalize it, score a few non-diagnostic clinical patterns, and draft
-                the Subjective, partial Objective, and Assessment sections for review.
+                Patients complete a shareable intake link, optional booking requests
+                are captured at the end, and practitioners review stored structured
+                SOAP-ready encounters from a dedicated dashboard.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -28,14 +28,14 @@ export default function Home() {
                 href="/intake"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-semibold text-[color:var(--background)] transition-transform hover:-translate-y-0.5"
               >
-                Open Intake Flow
+                Open Patient Intake
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/dashboard"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--surface-strong)] px-5 py-3 text-sm font-semibold text-[color:var(--foreground)] transition-transform hover:-translate-y-0.5"
               >
-                View Dashboard
+                Open Practitioner Dashboard
               </Link>
             </div>
           </div>
@@ -48,7 +48,7 @@ export default function Home() {
                 </div>
                 <p className="mt-2">
                   Intake form, JSON normalizer, rule-based pattern scoring, AI SOAP
-                  drafting, and manual plan editing.
+                  drafting, appointment request capture, and practitioner review.
                 </p>
               </div>
               <div className="rounded-2xl border border-[color:var(--line)] p-4">
@@ -70,17 +70,17 @@ export default function Home() {
           {
             icon: ClipboardList,
             title: "Structured intake",
-            body: "Six-step flow covering demographics, chief complaint, symptoms, history, lifestyle, and goals.",
+            body: "A dedicated patient-facing link captures demographics, symptoms, history, lifestyle, and goals before the visit.",
           },
           {
             icon: ShieldCheck,
             title: "Deterministic assessment",
-            body: "A small pattern library scores matched symptoms, context factors, evidence, and data gaps before the model writes.",
+            body: "Every intake is normalized, scored against clinical patterns, and turned into a structured record before the practitioner opens it.",
           },
           {
             icon: LayoutPanelLeft,
             title: "Practitioner review",
-            body: "Dashboard keeps the patient list on the left and the SOAP workspace on the right with manual plan editing.",
+            body: "The dashboard keeps all submitted patients together and opens the structured SOAP workspace for whichever patient the practitioner selects.",
           },
         ].map((item) => {
           const Icon = item.icon;

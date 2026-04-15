@@ -1,5 +1,5 @@
-import { normalizeIntakeSubmission } from "@/lib/assessment/normalize-intake";
-import { getSupabaseAdmin } from "@/lib/db/supabase";
+import { revalidatePath } from "next/cache";
+import { processIntakeSubmission } from "@/lib/intake/workflow";
 import { createRequestLog, logError, logInfo, logWarn } from "@/lib/logging/logger";
 import { intakeFormSchema } from "@/lib/schemas/intake";
 
@@ -10,64 +10,20 @@ export async function POST(request: Request) {
   logInfo({
     ...requestLog,
     message: "route.start",
-    step: "intake_submit",
+    step: "intake_pipeline",
     status: "started",
   });
 
   try {
     const body = await request.json();
     const input = intakeFormSchema.parse(body);
-    const normalizedIntake = normalizeIntakeSubmission(input);
-    const encounterId = crypto.randomUUID();
-    const patientId = crypto.randomUUID();
-    const supabase = getSupabaseAdmin();
-    let persisted = false;
+    const processed = await processIntakeSubmission(input);
 
-    if (supabase) {
-      const patientInsert = await supabase.from("patients").insert({
-        id: patientId,
-        first_name: normalizedIntake.patient_info.first_name,
-        last_name: normalizedIntake.patient_info.last_name,
-        dob: null,
-        sex_at_birth: normalizedIntake.patient_info.sex_at_birth,
-        gender_identity: normalizedIntake.patient_info.gender_identity,
-        phone: normalizedIntake.patient_info.contact.phone,
-        email: normalizedIntake.patient_info.contact.email,
-      });
-
-      if (patientInsert.error) {
-        throw patientInsert.error;
-      }
-
-      const encounterInsert = await supabase.from("encounters").insert({
-        id: encounterId,
-        patient_id: patientId,
-        status: "submitted",
-        chief_complaint: normalizedIntake.chief_complaint.primary_issue,
-        submitted_at: normalizedIntake.metadata.submitted_at,
-      });
-
-      if (encounterInsert.error) {
-        throw encounterInsert.error;
-      }
-
-      const intakeInsert = await supabase.from("intake_submissions").insert({
-        encounter_id: encounterId,
-        schema_version: normalizedIntake.schema_version,
-        raw_json: input,
-        normalized_json: normalizedIntake,
-      });
-
-      if (intakeInsert.error) {
-        throw intakeInsert.error;
-      }
-
-      persisted = true;
-    } else {
+    if (!processed.persisted) {
       logWarn({
         ...requestLog,
         message: "supabase.unavailable",
-        step: "intake_submit",
+        step: "intake_pipeline",
         status: "degraded",
         metadata: {
           reason: "Missing Supabase env vars. Falling back to local workflow mode.",
@@ -75,29 +31,39 @@ export async function POST(request: Request) {
       });
     }
 
+    revalidatePath("/dashboard");
+
     logInfo({
       ...requestLog,
       message: "route.complete",
-      step: "intake_submit",
+      step: "intake_pipeline",
       status: "ok",
-      encounter_id: encounterId,
+      encounter_id: processed.encounterId,
       latency_ms: Date.now() - startedAt,
+      model: processed.model,
+      prompt_version: processed.promptVersion,
+      token_usage: processed.tokenUsage ?? null,
       metadata: {
-        persisted,
-        symptom_count: normalizedIntake.symptoms.length,
+        persisted: processed.persisted,
+        symptom_count: processed.normalizedIntake.symptoms.length,
+        pattern_count: processed.assessmentResults.length,
+        used_fallback: processed.usedFallback,
       },
     });
 
     return Response.json({
-      encounterId,
-      normalizedIntake,
-      persisted,
+      encounterId: processed.encounterId,
+      normalizedIntake: processed.normalizedIntake,
+      assessmentResults: processed.assessmentResults,
+      soap: processed.soap,
+      persisted: processed.persisted,
+      bookingEnabled: true,
     });
   } catch (error) {
     logError({
       ...requestLog,
       message: "route.failed",
-      step: "intake_submit",
+      step: "intake_pipeline",
       status: "error",
       latency_ms: Date.now() - startedAt,
       error,

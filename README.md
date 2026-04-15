@@ -45,9 +45,11 @@ npm run dev
 ## Main Routes
 
 - `/` landing page
-- `/intake` guided intake workflow
-- `/dashboard` practitioner dashboard preview
+- `/intake` public patient intake link
+- `/questionnaire` alias for the patient intake link
+- `/dashboard` practitioner dashboard for submitted encounters
 - `/api/intake/submit`
+- `/api/encounters/:id/appointment-request`
 - `/api/encounters/:id/assess`
 - `/api/encounters/:id/generate-soap`
 - `/api/health`
@@ -91,5 +93,5 @@ npx vercel --prod
 
 ## Notes
 
-- If Supabase env vars are missing, the app still runs in local workflow mode.
+- If Supabase env vars are missing, the app still runs in local workflow mode with demo dashboard fallback data.
 - If `OPENROUTER_API_KEY` is missing, SOAP generation falls back to a deterministic template.
