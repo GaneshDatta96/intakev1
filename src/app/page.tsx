@@ -1,101 +1,85 @@
+
 import Link from "next/link";
 import {
   ArrowRight,
   ClipboardList,
+  FileText,
   LayoutPanelLeft,
-  ShieldCheck,
 } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-5 py-8 sm:px-8 lg:px-12">
-      <section className="glass-panel overflow-hidden rounded-[2rem] p-8 sm:p-10">
-        <div className="card-grid items-start">
-          <div className="space-y-6">
-            <p className="section-label">Clinical Intake V1</p>
-            <div className="space-y-4">
-              <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                Separate patient intake and practitioner review in one focused workflow.
-              </h1>
-              <p className="max-w-2xl text-lg leading-8 text-[color:var(--muted)]">
-                Patients complete a shareable intake link, optional booking requests
-                are captured at the end, and practitioners review stored structured
-                SOAP-ready encounters from a dedicated dashboard.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+    <main className="flex-1 bg-gray-50/50">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-24">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+          <div className="max-w-xl">
+            <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+              Intake V1
+            </p>
+            <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+              A better workflow for you and your patients.
+            </h1>
+            <p className="mt-6 text-lg text-gray-600">
+              Streamline your patient intake process with a simple, modern, and
+              efficient system. Capture patient information, assess symptoms, and
+              generate SOAP notes—all in one place.
+            </p>
+            <div className="mt-8 flex gap-4">
               <Link
-                href="/intake"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-semibold text-[color:var(--background)] transition-transform hover:-translate-y-0.5"
+                href="/questionnaire"
+                className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-md transition-transform hover:scale-105 hover:bg-blue-700"
               >
-                Open Patient Intake
-                <ArrowRight className="h-4 w-4" />
+                Patient Intake Form
+                <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--surface-strong)] px-5 py-3 text-sm font-semibold text-[color:var(--foreground)] transition-transform hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-blue-600 shadow-md ring-1 ring-inset ring-gray-300 transition-transform hover:scale-105"
               >
-                Open Practitioner Dashboard
+                Practitioner Dashboard
               </Link>
             </div>
           </div>
-          <div className="rounded-[1.75rem] border border-[color:var(--line)] bg-[color:var(--surface-strong)] p-6">
-            <p className="section-label">V1 Boundaries</p>
-            <div className="mt-4 space-y-4 text-sm text-[color:var(--muted)]">
-              <div className="rounded-2xl border border-[color:var(--line)] p-4">
-                <div className="font-semibold text-[color:var(--foreground)]">
-                  In scope
-                </div>
-                <p className="mt-2">
-                  Intake form, JSON normalizer, rule-based pattern scoring, AI SOAP
-                  drafting, appointment request capture, and practitioner review.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-[color:var(--line)] p-4">
-                <div className="font-semibold text-[color:var(--foreground)]">
-                  Out of scope
-                </div>
-                <p className="mt-2">
-                  Full EHR features, large knowledge bases, medication logic, and
-                  fully autonomous plans.
-                </p>
-              </div>
-            </div>
+
+          <div className="space-y-6">
+            <Feature
+              icon={ClipboardList}
+              title="Simplified Patient Intake"
+              description="A clean, intuitive form for patients to provide their information from any device."
+            />
+            <Feature
+              icon={FileText}
+              title="Automated SOAP Notes"
+              description="Automatically generate structured SOAP notes from patient intake data to save time."
+            />
+            <Feature
+              icon={LayoutPanelLeft}
+              title="Centralized Dashboard"
+              description="A dedicated dashboard for practitioners to view and manage all patient encounters."
+            />
           </div>
         </div>
-      </section>
-
-      <section className="grid gap-5 md:grid-cols-3">
-        {[
-          {
-            icon: ClipboardList,
-            title: "Structured intake",
-            body: "A dedicated patient-facing link captures demographics, symptoms, history, lifestyle, and goals before the visit.",
-          },
-          {
-            icon: ShieldCheck,
-            title: "Deterministic assessment",
-            body: "Every intake is normalized, scored against clinical patterns, and turned into a structured record before the practitioner opens it.",
-          },
-          {
-            icon: LayoutPanelLeft,
-            title: "Practitioner review",
-            body: "The dashboard keeps all submitted patients together and opens the structured SOAP workspace for whichever patient the practitioner selects.",
-          },
-        ].map((item) => {
-          const Icon = item.icon;
-          return (
-            <article
-              key={item.title}
-              className="glass-panel rounded-[1.5rem] p-6 transition-transform hover:-translate-y-1"
-            >
-              <Icon className="h-5 w-5 text-[color:var(--accent)]" />
-              <h2 className="mt-5 text-xl font-semibold">{item.title}</h2>
-              <p className="mt-3 leading-7 text-[color:var(--muted)]">{item.body}</p>
-            </article>
-          );
-        })}
-      </section>
+      </div>
     </main>
   );
 }
+
+function Feature(props: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+}) {
+  const Icon = props.icon;
+  return (
+    <div className="flex gap-4 rounded-xl bg-white p-5 shadow-sm">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+        <Icon className="h-6 w-6" />
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">{props.title}</h3>
+        <p className="mt-1 text-gray-600">{props.description}</p>
+      </div>
+    </div>
+  );
+}
+

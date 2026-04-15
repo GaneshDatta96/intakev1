@@ -5,8 +5,11 @@
   --foreground: #142125;
   --surface: rgba(255, 255, 255, 0.72);
   --surface-strong: rgba(255, 255, 255, 0.9);
+  --surface-raised: rgba(255, 255, 255, 0.96);
   --muted: #61777d;
+  --muted-strong: #425b60;
   --line: rgba(20, 33, 37, 0.12);
+  --line-strong: rgba(20, 33, 37, 0.2);
   --accent: #0e7c7b;
   --danger: #9f3f35;
   --shadow: 0 20px 70px rgba(27, 44, 52, 0.12);
