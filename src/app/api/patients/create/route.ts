@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     logError({
       ...requestLog,
       message: "Supabase client not available",
+      error: new Error("Supabase client not available"),
     });
     return new Response(JSON.stringify({ error: "Database connection failed" }), { status: 500 });
   }
