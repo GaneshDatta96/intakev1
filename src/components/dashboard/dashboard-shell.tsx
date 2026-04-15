@@ -128,3 +128,14 @@ function PatientDetail({ case: activeCase }: { case: DashboardCase }) {
         </div>
     )
 }
+
+function SoapSection(props: { title: string; body: string }) {
+    return (
+        <section>
+            <h3 className="text-2xl font-bold tracking-tight">{props.title}</h3>
+            <p className="mt-3 whitespace-pre-wrap text-base leading-relaxed text-gray-700">
+                {props.body}
+            </p>
+        </section>
+    );
+}
