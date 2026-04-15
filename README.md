@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Intake V1
 
-## Getting Started
+Focused V1 for outpatient clinics:
 
-First, run the development server:
+- structured patient intake
+- deterministic pattern scoring
+- AI-assisted SOAP drafting for `S + partial O + A`
+- manually reviewed `P`
+
+## Stack
+
+- Next.js 16 App Router
+- Supabase Postgres
+- OpenRouter for structured SOAP drafting
+- Route handlers for the V1 workflow API
+
+## Local Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Copy env vars:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Fill in:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_MODEL`
+
+4. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Main Routes
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `/` landing page
+- `/intake` guided intake workflow
+- `/dashboard` practitioner dashboard preview
+- `/api/intake/submit`
+- `/api/encounters/:id/assess`
+- `/api/encounters/:id/generate-soap`
+- `/api/health`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Supabase
 
-## Learn More
+Migration files live in [supabase/migrations/20260415070000_init.sql](./supabase/migrations/20260415070000_init.sql).
 
-To learn more about Next.js, take a look at the following resources:
+Typical flow after authenticating the Supabase CLI:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run supabase:init
+npx supabase login
+npx supabase projects create intake-v1
+npx supabase link --project-ref <your-project-ref>
+npm run supabase:push
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Logging
 
-## Deploy on Vercel
+Structured request logging is mandatory in this project.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- API routes log start, completion, degraded mode, and error states
+- logs are emitted as structured JSON
+- raw PHI and full prompts should not be logged
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+After creating the Supabase project and setting env vars:
+
+```bash
+npx vercel login
+npx vercel link
+npx vercel env add NEXT_PUBLIC_SUPABASE_URL
+npx vercel env add SUPABASE_URL
+npx vercel env add SUPABASE_SERVICE_ROLE_KEY
+npx vercel env add OPENROUTER_API_KEY
+npx vercel env add OPENROUTER_MODEL
+npx vercel --prod
+```
+
+## Notes
+
+- If Supabase env vars are missing, the app still runs in local workflow mode.
+- If `OPENROUTER_API_KEY` is missing, SOAP generation falls back to a deterministic template.
