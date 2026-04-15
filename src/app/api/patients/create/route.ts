@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     logInfo({ ...requestLog, message: "Patient created successfully" });
     return new Response(JSON.stringify(data[0]), { status: 201 });
   } catch (error) {
-    logError({ ...requestLog, error: error });
+    logError({ ...requestLog, message: "Failed to create patient", error: error });
     return new Response(JSON.stringify({ error: "Failed to create patient" }), { status: 400 });
   }
 }
