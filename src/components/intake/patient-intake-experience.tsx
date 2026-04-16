@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, CheckCircle2, Copy, LoaderCircle, Send } from "lucide-react";
@@ -33,6 +33,7 @@ export function PatientIntakeExperience(props: {
 }) {
   const [patient, setPatient] = useState<PatientDetails | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [origin, setOrigin] = useState("");
   const [submission, setSubmission] = useState<SubmissionState>({
     isSubmitted: false,
     pending: false,
@@ -48,17 +49,24 @@ export function PatientIntakeExperience(props: {
   });
 
   const activePatientId = patient?.id ?? props.initialPatientId ?? null;
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const patientLink = activePatientId
-    ? `${origin}/questionnaire?patientId=${activePatientId}`
+  const patientPath = activePatientId
+    ? `/questionnaire?patientId=${activePatientId}`
+    : null;
+  const patientLink = patientPath
+    ? `${origin}${patientPath}`
     : null;
 
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
   async function handleCopyLink() {
-    if (!patientLink || typeof navigator === "undefined" || !navigator.clipboard) {
+    if (!patientPath || typeof navigator === "undefined" || !navigator.clipboard) {
       return;
     }
 
-    await navigator.clipboard.writeText(patientLink);
+    const absoluteLink = new URL(patientPath, window.location.origin).toString();
+    await navigator.clipboard.writeText(absoluteLink);
     setCopiedLink(true);
     window.setTimeout(() => setCopiedLink(false), 2000);
   }

@@ -3,9 +3,9 @@ import { createRequestLog, logError, logInfo, logWarn } from "@/lib/logging/logg
 import { z } from "zod";
 
 const createPatientSchema = z.object({
-  first_name: z.string(),
-  last_name: z.string(),
-  email: z.string().email(),
+  first_name: z.string().trim().min(1),
+  last_name: z.string().trim().min(1),
+  email: z.string().trim().email(),
 });
 
 export async function POST(request: Request) {
@@ -22,6 +22,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { first_name, last_name, email } = createPatientSchema.parse(body);
+    const fallbackPatient = {
+      id: crypto.randomUUID(),
+      first_name,
+      last_name,
+      email,
+      created_at: new Date().toISOString(),
+    };
     const supabase = getSupabaseAdmin();
 
     if (!supabase) {
@@ -38,39 +45,56 @@ export async function POST(request: Request) {
       });
 
       return Response.json(
-        {
-          id: crypto.randomUUID(),
-          first_name,
-          last_name,
-          email,
-          created_at: new Date().toISOString(),
-        },
+        fallbackPatient,
         { status: 201 },
       );
     }
 
-    const { data, error } = await supabase
-      .from("patients")
-      .insert([{ first_name, last_name, email }])
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("patients")
+        .insert([{ first_name, last_name, email }])
+        .select()
+        .single();
 
-    if (error) {
-      throw error;
+      if (error) {
+        throw error;
+      }
+
+      logInfo({
+        ...requestLog,
+        message: "route.complete",
+        step: "patient_create",
+        status: "ok",
+        latency_ms: Date.now() - startedAt,
+        metadata: {
+          persisted: true,
+        },
+      });
+
+      return Response.json(data, { status: 201 });
+    } catch (error) {
+      const normalizedError =
+        error instanceof Error
+          ? { name: error.name, message: error.message }
+          : { name: "UnknownError", message: "Unexpected persistence error" };
+
+      logWarn({
+        ...requestLog,
+        message: "patient.persist.fallback",
+        step: "patient_create",
+        status: "degraded",
+        latency_ms: Date.now() - startedAt,
+        metadata: {
+          reason: "Patient insert failed. Returning ephemeral patient record.",
+          persisted: false,
+          error_name: normalizedError.name,
+          error_message: normalizedError.message,
+        },
+      });
+
+      return Response.json(fallbackPatient, { status: 201 });
     }
-
-    logInfo({
-      ...requestLog,
-      message: "route.complete",
-      step: "patient_create",
-      status: "ok",
-      latency_ms: Date.now() - startedAt,
-      metadata: {
-        persisted: true,
-      },
-    });
-
-    return Response.json(data, { status: 201 });
   } catch (error) {
     logError({
       ...requestLog,
