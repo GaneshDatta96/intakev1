@@ -51,7 +51,7 @@ export function PatientCreationForm({ setPatient }: { setPatient: (patient: Pati
             Create a Patient Record
           </h1>
           <p className="max-w-3xl leading-7 text-[color:var(--muted)]">
-            First, let's create a patient record to associate with this intake.
+            First, let&apos;s create a patient record to associate with this intake.
           </p>
         </div>
       </section>

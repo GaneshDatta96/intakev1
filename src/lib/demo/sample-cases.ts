@@ -2,10 +2,11 @@ import { type DashboardCase } from "@/lib/schemas/modern-soap";
 
 const sampleCases: DashboardCase[] = [
   {
-    id: "pa-1",
+    id: "11111111-1111-4111-8111-111111111111",
     patient: { first_name: "Maria", last_name: "Cole", email: "maria.cole@example.com" },
     submitted_at: "2026-04-10T10:00:00Z",
     subjective: {
+      patient_id: "22222222-2222-4222-8222-222222222222",
       chief_complaint: { summary: "Annual check-up & medication review" },
       history_of_present_illness: { summary: "Patient feels generally well. Reports occasional stress-related headaches." },
       review_of_systems: { summary: "General: No fever, chills. CV: No chest pain. Resp: No SOB." },
@@ -26,7 +27,7 @@ const sampleCases: DashboardCase[] = [
     },
     assessments: [
       {
-        id: "as-1-1",
+        id: "33333333-3333-4333-8333-333333333333",
         diagnosis: "Hypertension",
         icd_code: "I10",
         status: "Controlled",
@@ -43,7 +44,7 @@ const sampleCases: DashboardCase[] = [
         },
       },
       {
-        id: "as-1-2",
+        id: "44444444-4444-4444-8444-444444444444",
         diagnosis: "Hyperlipidemia",
         icd_code: "E78.5",
         status: "Controlled",

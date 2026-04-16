@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from "@/lib/db/supabase";
-import { createRequestLog, logError, logInfo } from "@/lib/logging/logger";
+import { createRequestLog, logError, logInfo, logWarn } from "@/lib/logging/logger";
 import { z } from "zod";
 
 const createPatientSchema = z.object({
@@ -9,34 +9,78 @@ const createPatientSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
   const requestLog = createRequestLog(request, "/api/patients/create");
-  const supabase = getSupabaseAdmin();
 
-  if (!supabase) {
-    logError({
-      ...requestLog,
-      message: "Supabase client not available",
-      error: new Error("Supabase client not available"),
-    });
-    return new Response(JSON.stringify({ error: "Database connection failed" }), { status: 500 });
-  }
+  logInfo({
+    ...requestLog,
+    message: "route.start",
+    step: "patient_create",
+    status: "started",
+  });
 
   try {
     const body = await request.json();
     const { first_name, last_name, email } = createPatientSchema.parse(body);
+    const supabase = getSupabaseAdmin();
+
+    if (!supabase) {
+      logWarn({
+        ...requestLog,
+        message: "supabase.unavailable",
+        step: "patient_create",
+        status: "degraded",
+        latency_ms: Date.now() - startedAt,
+        metadata: {
+          reason: "Missing Supabase env vars. Returning ephemeral patient record.",
+          persisted: false,
+        },
+      });
+
+      return Response.json(
+        {
+          id: crypto.randomUUID(),
+          first_name,
+          last_name,
+          email,
+          created_at: new Date().toISOString(),
+        },
+        { status: 201 },
+      );
+    }
+
     const { data, error } = await supabase
       .from("patients")
       .insert([{ first_name, last_name, email }])
-      .select();
+      .select()
+      .single();
 
     if (error) {
       throw error;
     }
 
-    logInfo({ ...requestLog, message: "Patient created successfully" });
-    return new Response(JSON.stringify(data[0]), { status: 201 });
+    logInfo({
+      ...requestLog,
+      message: "route.complete",
+      step: "patient_create",
+      status: "ok",
+      latency_ms: Date.now() - startedAt,
+      metadata: {
+        persisted: true,
+      },
+    });
+
+    return Response.json(data, { status: 201 });
   } catch (error) {
-    logError({ ...requestLog, message: "Failed to create patient", error: error });
-    return new Response(JSON.stringify({ error: "Failed to create patient" }), { status: 400 });
+    logError({
+      ...requestLog,
+      message: "route.failed",
+      step: "patient_create",
+      status: "error",
+      latency_ms: Date.now() - startedAt,
+      error,
+    });
+
+    return Response.json({ error: "Failed to create patient" }, { status: 400 });
   }
 }

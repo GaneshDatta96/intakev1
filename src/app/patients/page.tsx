@@ -93,7 +93,7 @@ export default function PatientsPage() {
                 {patients.length > 0 ? (
                     <div className="space-y-3">
                         {patients.map((patient) => {
-                            const intakeLink = `${window.location.origin}/questionnaire/${patient.id}`;
+                            const intakeLink = `${window.location.origin}/questionnaire?patientId=${patient.id}`;
                             return (
                                 <div key={patient.id} className="flex items-center justify-between gap-4 rounded-xl border bg-white p-4 shadow-sm">
                                     <div>

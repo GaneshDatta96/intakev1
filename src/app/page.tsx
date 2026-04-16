@@ -1,109 +1,204 @@
-"use client";
+import type { Metadata } from "next";
 import Link from "next/link";
-import React from "react";
+
+const heroSteps = [
+  "Doctor creates the patient.",
+  "System generates a unique patient link.",
+  "Patient completes the questionnaire.",
+  "Doctor reviews structured, SOAP-ready intake.",
+];
+
+const flowSteps = [
+  "Create a patient record and generate a unique intake link.",
+  "Send the link so the patient completes intake before the visit.",
+  "The system structures the answers into organized clinical data.",
+  "Review a clean practitioner view with SOAP-ready context.",
+];
+
+const benefits = [
+  {
+    title: "Less admin",
+    description: "Fewer calls, fewer PDFs, and less manual re-entry.",
+  },
+  {
+    title: "Better intake quality",
+    description: "Answers arrive complete, legible, and consistently structured.",
+  },
+  {
+    title: "Faster documentation",
+    description: "Clinicians start with organized context instead of a blank note.",
+  },
+];
+
+export const metadata: Metadata = {
+  title: "Custom Patient Intake Workflow Demo",
+  description:
+    "Create a patient, generate a unique patient link, collect intake responses, and review structured SOAP-ready data in a custom clinic workflow demo.",
+};
 
 export default function Home() {
   return (
-    <div className="bg-gray-50 dark:bg-zinc-900 text-gray-800 dark:text-gray-200 font-light">
-      <main className="max-w-5xl mx-auto">
-
-        {/* 1. HERO */}
-        <section className="text-center py-28">
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight leading-tight">
-            A Calmer, More Considered<br />Clinical Workflow.
+    <div className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-8 px-5 pb-20 pt-8 sm:px-8 sm:pt-12 lg:px-12">
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <div className="glass-panel rounded-[2rem] px-6 py-8 sm:px-8 sm:py-10">
+          <p className="section-label">Custom Clinic Intake Demo</p>
+          <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-[-0.04em] sm:text-5xl lg:text-[3.75rem] lg:leading-[1.02]">
+            Create a patient, send a unique intake link, and review
+            structured SOAP-ready intake.
           </h1>
-          <p className="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-gray-600 dark:text-gray-400">
-            We design and build custom patient intake systems that reduce administrative work and elevate the patient experience.
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-[color:var(--muted-strong)]">
+            The doctor creates the patient, the system generates a unique
+            patient link, the patient completes the questionnaire, and the
+            answers return as organized clinical data.
           </p>
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-            *This is a live demonstration of our build capabilities.*
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-[color:var(--muted)]">
+            This is a live demo of a custom-built patient intake and
+            practitioner workflow system for clinics, not a SaaS product.
           </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Link href="/intake" className="px-6 py-3 rounded-md bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors">
-              Explore Patient Intake
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/intake"
+              className="inline-flex items-center justify-center rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-92"
+            >
+              View Patient Experience
             </Link>
-            <Link href="/dashboard" className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
-              Explore Practitioner View
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-full border border-[color:var(--line-strong)] bg-[color:var(--surface-strong)] px-5 py-3 text-sm font-semibold text-[color:var(--foreground)] transition hover:bg-white"
+            >
+              View Practitioner Dashboard
             </Link>
           </div>
-        </section>
-
-        {/* 2. VISUAL PREVIEW BLOCK */}
-        <section className="py-20 bg-white dark:bg-zinc-800/50 rounded-lg">
-          <p className="text-center text-lg md:text-xl max-w-4xl mx-auto text-gray-700 dark:text-gray-300">
-            Experience the workflow from both sides: a thoughtful, intelligent intake for your patients and a clear, organized dashboard for your practitioners.
-          </p>
-          {/* Placeholder for visual elements */}
-        </section>
-
-        {/* 3. THREE CORE BENEFITS */}
-        <section className="py-28">
-          <div className="grid md:grid-cols-3 gap-16 text-center">
-            <div>
-              <h2 className="text-xl font-normal">Reclaim Your Administrative Hours.</h2>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">A streamlined digital process replaces manual data entry and paperwork.</p>
-            </div>
-            <div>
-              <h2 className="text-xl font-normal">Improve Intake Data Quality.</h2>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">Receive complete, structured, and legible patient information, every time.</p>
-            </div>
-            <div>
-              <h2 className="text-xl font-normal">Offer a Premium Patient Experience.</h2>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">A calm, intuitive first impression that reflects the quality of your care.</p>
-            </div>
+          <div className="mt-8 flex flex-wrap gap-3 text-sm font-semibold text-[color:var(--muted-strong)]">
+            <span className="rounded-full border border-[color:var(--line)] bg-white/70 px-3 py-2">
+              Less admin
+            </span>
+            <span className="rounded-full border border-[color:var(--line)] bg-white/70 px-3 py-2">
+              Better intake quality
+            </span>
+            <span className="rounded-full border border-[color:var(--line)] bg-white/70 px-3 py-2">
+              Faster documentation
+            </span>
           </div>
-        </section>
+        </div>
 
-        {/* 4. WHO THIS IS FOR */}
-        <section className="py-28 text-center bg-gray-100 dark:bg-zinc-800/50 rounded-lg">
-           <h2 className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">Who We Partner With</h2>
-           <p className="mt-4 text-2xl md:text-3xl max-w-3xl mx-auto">
-            Designed for Modern Practices
-           </p>
-           <p className="mt-4 max-w-3xl mx-auto text-gray-600 dark:text-gray-400 text-lg">
-            We partner with forward-thinking clinics, private practices, and specialized healthcare teams to build workflows tailored precisely to their needs and clinical models.
-           </p>
-        </section>
-
-        {/* 5. WHY THIS MATTERS */}
-        <section className="py-28">
-          <div className="text-center">
-            <h2 className="text-2xl md:text-3xl">The Clinical Impact of a Better Workflow.</h2>
+        <div className="glass-panel rounded-[2rem] px-6 py-8 sm:px-8 sm:py-10">
+          <p className="section-label">Workflow At A Glance</p>
+          <div className="mt-6 space-y-4">
+            {heroSteps.map((step, index) => (
+              <div
+                key={step}
+                className="flex items-start gap-4 rounded-[1.5rem] border border-[color:var(--line)] bg-white/70 px-4 py-4"
+              >
+                <span className="font-mono text-sm text-[color:var(--muted)]">
+                  0{index + 1}
+                </span>
+                <p className="text-base font-semibold tracking-[-0.02em] text-[color:var(--foreground)]">
+                  {step}
+                </p>
+              </div>
+            ))}
           </div>
-          <div className="mt-12 max-w-2xl mx-auto">
-            <ul className="space-y-4 text-lg">
-              <li className="flex items-start"><span className="text-teal-600 dark:text-teal-500 mr-3 mt-1">✓</span><span>Significantly reduce practitioner and staff administrative time.</span></li>
-              <li className="flex items-start"><span className="text-teal-600 dark:text-teal-500 mr-3 mt-1">✓</span><span>Ensure higher-quality, more consistent intake data.</span></li>
-              <li className="flex items-start"><span className="text-teal-600 dark:text-teal-500 mr-3 mt-1">✓</span><span>Prepare for consultations with a clearer clinical picture.</span></li>
-              <li className="flex items-start"><span className="text-teal-600 dark:text-teal-500 mr-3 mt-1">✓</span><span>Provide a respectful and professional patient experience.</span></li>
-            </ul>
-          </div>
-        </section>
-
-        {/* 6. DEMO FRAMING (CRITICAL) */}
-        <section className="py-20">
-          <div className="max-w-3xl mx-auto p-8 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-zinc-800/50 text-center">
-            <h2 className="text-2xl md:text-3xl">This Is Not a Product. It’s a Demonstration.</h2>
-            <p className="mt-4 text-gray-600 dark:text-gray-400 text-lg">
-              What you're seeing is not a generic software template. It is an interactive example of a custom-built system, designed to show you what is possible. The final workflow we build for you will be unique to your practice.
+          <div className="mt-6 rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--surface-raised)] px-5 py-5">
+            <p className="section-label">Doctor Output</p>
+            <p className="mt-3 text-xl font-semibold tracking-[-0.03em]">
+              Clean patient context, ready for review and SOAP drafting.
             </p>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* 7. FINAL CTA */}
-        <section className="text-center py-28">
-          <h2 className="text-3xl md:text-4xl max-w-2xl mx-auto">See What a Custom Workflow Could Look Like for Your Clinic.</h2>
-          <div className="mt-8 flex justify-center gap-4">
-            <Link href="#" className="px-6 py-3 rounded-md bg-gray-800 text-white font-medium hover:bg-gray-700 transition-colors">
-              Book a Walkthrough
-            </Link>
-            <Link href="#" className="px-6 py-3 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
-              Request a Custom Build
-            </Link>
+      <section className="rounded-[2rem] border border-[color:var(--line)] bg-[color:var(--surface)] px-6 py-8 shadow-[0_20px_70px_rgba(27,44,52,0.08)] sm:px-8 sm:py-10">
+        <div className="max-w-3xl">
+          <p className="section-label">How It Works</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
+            Four steps from patient creation to practitioner-ready review.
+          </h2>
+        </div>
+        <ol className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {flowSteps.map((step, index) => (
+            <li
+              key={step}
+              className="rounded-[1.5rem] border border-[color:var(--line)] bg-white/78 px-5 py-5"
+            >
+              <p className="font-mono text-sm text-[color:var(--muted)]">
+                Step 0{index + 1}
+              </p>
+              <p className="mt-4 text-base leading-7 text-[color:var(--foreground)]">
+                {step}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-3">
+        {benefits.map((benefit) => (
+          <div
+            key={benefit.title}
+            className="glass-panel rounded-[1.75rem] px-6 py-7"
+          >
+            <p className="section-label">Outcome</p>
+            <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em]">
+              {benefit.title}
+            </h2>
+            <p className="mt-3 leading-7 text-[color:var(--muted-strong)]">
+              {benefit.description}
+            </p>
           </div>
-        </section>
+        ))}
+      </section>
 
-      </main>
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.7fr)]">
+        <div className="glass-panel rounded-[2rem] px-6 py-8 sm:px-8 sm:py-10">
+          <p className="section-label">Built For Your Clinic</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
+            This demo shows the kind of workflow we can build for your practice.
+          </h2>
+          <p className="mt-5 max-w-3xl leading-8 text-[color:var(--muted-strong)]">
+            The patient link, intake questions, data structure, and
+            practitioner view can all be tailored to your specialty, review
+            process, and documentation style.
+          </p>
+        </div>
+
+        <div className="rounded-[2rem] border border-[color:var(--line)] bg-[color:var(--foreground)] px-6 py-8 text-white shadow-[0_20px_70px_rgba(20,33,37,0.16)] sm:px-8 sm:py-10">
+          <p className="section-label !text-white/60">Why It Matters</p>
+          <p className="mt-4 text-2xl font-semibold tracking-[-0.03em]">
+            Intake becomes easier to send, easier to complete, and easier to
+            use.
+          </p>
+          <p className="mt-4 leading-7 text-white/78">
+            The result is less friction before the visit and a better starting
+            point for clinical review.
+          </p>
+        </div>
+      </section>
+
+      <section className="glass-panel rounded-[2rem] px-6 py-8 text-center sm:px-8 sm:py-10">
+        <p className="section-label">Next Step</p>
+        <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
+          If this flow fits your clinic, we can build your version.
+        </h2>
+        <p className="mx-auto mt-5 max-w-3xl leading-8 text-[color:var(--muted-strong)]">
+          We tailor the intake flow, structured outputs, and practitioner
+          workspace to match how your team actually works.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link
+            href="#"
+            className="inline-flex items-center justify-center rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-92"
+          >
+            Book a walkthrough
+          </Link>
+          <Link
+            href="#"
+            className="inline-flex items-center justify-center rounded-full border border-[color:var(--line-strong)] bg-[color:var(--surface-strong)] px-5 py-3 text-sm font-semibold text-[color:var(--foreground)] transition hover:bg-white"
+          >
+            Request custom version
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
