@@ -4,3 +4,9 @@ Build Log Initialized.
 - Created src/components/layout/header.tsx
 - Integrated GlobalHeader into src/app/layout.tsx to provide consistent navigation across the application.
 - Added links to Dashboard, Patients, and New Intake.
+
+[2026-04-16] - feat: Integrate AuroraBackground component
+- Created src/components/ui/aurora-background.tsx.
+- Created src/lib/utils.ts for cn utility.
+- Created tailwind.config.js with aurora animations.
+- Applied AuroraBackground to the homepage (src/app/page.tsx).
