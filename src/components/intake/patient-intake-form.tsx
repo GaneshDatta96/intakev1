@@ -12,7 +12,7 @@ import {
 import {
     subjectiveNoteSchema,
     type SubjectiveNote,
-} from "@/lib/schemas/modern-soap";
+} from '@/lib/schemas/modern-soap';
 import { useState } from "react";
 
 const stepLabels = [

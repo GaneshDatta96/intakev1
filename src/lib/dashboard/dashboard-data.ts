@@ -2,7 +2,7 @@ import { buildFallbackSoap } from "@/lib/ai/generate-soap";
 import { patternLibrary } from "@/lib/assessment/pattern-library";
 import { scorePatterns } from "@/lib/assessment/score-patterns";
 import { getSupabaseAdmin } from "@/lib/db/supabase";
-import { buildSampleCases } from "@/lib/demo/sample-cases";
+import { getSampleCases } from "@/lib/demo/sample-cases";
 import {
   normalizedIntakeSchema,
   type AppointmentRequestInput,
@@ -146,22 +146,13 @@ async function loadAppointmentRequests(encounterIds: string[]) {
   return groupByEncounterId((response.data ?? []) as AppointmentRequestRow[]);
 }
 
-function mapDemoCases(): DashboardCase[] {
-  return buildSampleCases().map((item) => ({
-    ...item,
-    encounter_status: "demo",
-    reviewed_at: null,
-    soap_review_status: "draft",
-    appointment_request: null,
-    source: "demo",
-  }));
-}
+
 
 export async function getDashboardCases(): Promise<DashboardCase[]> {
   const supabase = getSupabaseAdmin();
 
   if (!supabase) {
-    return mapDemoCases();
+    return getSampleCases();
   }
 
   const encountersResponse = await supabase
