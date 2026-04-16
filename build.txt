@@ -1,0 +1,6 @@
+Build Log Initialized.
+
+[2026-04-16] - feat: Add global navigation header
+- Created src/components/layout/header.tsx
+- Integrated GlobalHeader into src/app/layout.tsx to provide consistent navigation across the application.
+- Added links to Dashboard, Patients, and New Intake.
