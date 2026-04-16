@@ -10,355 +10,152 @@ import {
   Send,
 } from "lucide-react";
 import {
-  intakeFormSchema,
-  symptomCatalog,
-  type IntakeFormInput,
-  type IntakeFormValues,
-} from "@/lib/schemas/intake";
+    subjectiveNoteSchema,
+    type SubjectiveNote,
+} from "@/lib/schemas/modern-soap";
 import { useState } from "react";
 
 const stepLabels = [
-  "Basic Info",
   "Chief Complaint",
-  "Symptoms",
-  "Medical History",
-  "Lifestyle",
-  "Goals",
+  "History of Present Illness",
+  "Review of Systems",
+  "Past Medical History",
+  "Medications",
+  "Social History",
 ] as const;
 
-const defaultValues: IntakeFormInput = {
-    patient_info: {
-      first_name: "",
-      last_name: "",
-      age: 0,
-      sex_at_birth: "",
-      gender_identity: "",
-      phone: "",
-      email: "",
-    },
-    chief_complaint: {
-      primary_issue: "",
-      duration: "",
-      severity_0_10: 0,
-      onset: "",
-      aggravating_factors: "",
-      relieving_factors: "",
-    },
-    symptom_keys: [],
-    custom_symptoms: "",
-    history: {
-      conditions: "",
-      medications: "",
-      surgeries: "",
-      family_history: "",
-    },
-    lifestyle: {
-      diet: "",
-      exercise: "",
-      sleep: "",
-      stress: "",
-      substance_use: "",
-    },
-    goals: {
-      patient_priorities: "",
-      expectations: "",
-    },
-    metadata: {
-      source: "shared_link",
-    },
-  };
 
 export function PatientIntakeForm(props: {
-  onSubmit: (values: IntakeFormInput) => Promise<void>;
+  patientId: string;
+  onSubmit: (values: SubjectiveNote) => Promise<void>;
   isSubmitting: boolean;
   submissionStatus: string;
   submissionError: string | null;
 }) {
   const [step, setStep] = useState(0);
 
-  const {
-    register,
-    watch,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<IntakeFormValues, unknown, IntakeFormInput>({
-    resolver: zodResolver(intakeFormSchema),
-    defaultValues,
+  const { register, handleSubmit } = useForm<SubjectiveNote>({
+    resolver: zodResolver(subjectiveNoteSchema),
+    defaultValues: {
+        patient_id: props.patientId,
+        chief_complaint: "",
+        history_of_present_illness: "",
+        review_of_systems: "",
+        past_medical_history: "",
+        medications: "",
+        social_history_environment: { housing: "", occupation: "", sdoh: "", toxins_exposures: "" },
+        social_history_body: { diet: "", exercise: "", substance_use: "" },
+        social_history_mind: { stress: "", social_support: "", relationships: "" },
+    }
   });
-
-  const selectedSymptoms = watch("symptom_keys") ?? [];
-
-  const toggleSymptom = (symptomKey: string) => {
-    const nextValues = selectedSymptoms.includes(symptomKey)
-      ? selectedSymptoms.filter((item) => item !== symptomKey)
-      : [...selectedSymptoms, symptomKey];
-
-    setValue("symptom_keys", nextValues, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-  };
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-        {stepLabels.map((label, index) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => setStep(index)}
-            className={clsx(
-              "rounded-2xl border px-4 py-3 text-left text-sm transition-colors",
-              index === step
-                ? "border-transparent bg-[color:var(--foreground)] text-[color:var(--background)]"
-                : "border-[color:var(--line)] bg-[color:var(--surface-strong)] text-[color:var(--muted)]"
-            )}
-          >
-            <div className="font-mono text-xs">{`0${index + 1}`}</div>
-            <div className="mt-1 font-semibold">{label}</div>
-          </button>
-        ))}
-      </div>
-
-      <form className="space-y-6" onSubmit={handleSubmit(props.onSubmit)}>
-        {step === 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="First name"
-              error={errors.patient_info?.first_name?.message}
+        <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+            {stepLabels.map((label, index) => (
+            <button
+                key={label}
+                type="button"
+                onClick={() => setStep(index)}
+                className={clsx(
+                "rounded-2xl border px-4 py-3 text-left text-sm transition-colors",
+                index === step
+                    ? "border-transparent bg-blue-600 text-white"
+                    : "border-gray-300 bg-white text-gray-600"
+                )}
             >
-              <input
-                {...register("patient_info.first_name")}
-                className={inputClassName}
-              />
-            </Field>
-            <Field
-              label="Last name"
-              error={errors.patient_info?.last_name?.message}
-            >
-              <input
-                {...register("patient_info.last_name")}
-                className={inputClassName}
-              />
-            </Field>
-            <Field label="Age" error={errors.patient_info?.age?.message}>
-              <input
-                type="number"
-                {...register("patient_info.age", { valueAsNumber: true })}
-                className={inputClassName}
-              />
-            </Field>
-            <Field
-              label="Sex at birth"
-              error={errors.patient_info?.sex_at_birth?.message}
-            >
-              <select
-                {...register("patient_info.sex_at_birth")}
-                className={inputClassName}
-              >
-                <option value="">Select</option>
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
-                <option value="Intersex">Intersex</option>
-              </select>
-            </Field>
-            <Field label="Gender identity">
-              <input
-                {...register("patient_info.gender_identity")}
-                className={inputClassName}
-              />
-            </Field>
-            <Field label="Phone">
-              <input
-                {...register("patient_info.phone")}
-                className={inputClassName}
-              />
-            </Field>
-            <Field label="Email" error={errors.patient_info?.email?.message}>
-              <input
-                {...register("patient_info.email")}
-                className={inputClassName}
-              />
-            </Field>
-          </div>
-        ) : null}
+                <div className="font-mono text-xs">{`0${index + 1}`}</div>
+                <div className="mt-1 font-semibold">{label}</div>
+            </button>
+            ))}
+        </div>
 
-        {step === 1 ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Primary issue"
-              error={errors.chief_complaint?.primary_issue?.message}
-            >
-              <textarea
-                {...register("chief_complaint.primary_issue")}
-                className={textareaClassName}
-              />
+      <form className="space-y-8" onSubmit={handleSubmit(props.onSubmit)}>
+        {step === 0 && (
+          <FormSection title="Chief Complaint">
+            <Field label="What is the primary reason for your visit today?">
+                <textarea {...register("chief_complaint")} className={textareaClassName} />
             </Field>
-            <Field
-              label="Duration"
-              error={errors.chief_complaint?.duration?.message}
-            >
-              <input
-                {...register("chief_complaint.duration")}
-                className={inputClassName}
-              />
-            </Field>
-            <Field label="Severity (0-10)">
-              <input
-                type="number"
-                {...register("chief_complaint.severity_0_10", {
-                  valueAsNumber: true,
-                })}
-                className={inputClassName}
-              />
-            </Field>
-            <Field label="Onset">
-              <input
-                {...register("chief_complaint.onset")}
-                className={inputClassName}
-              />
-            </Field>
-            <Field label="Aggravating factors">
-              <textarea
-                {...register("chief_complaint.aggravating_factors")}
-                className={textareaClassName}
-              />
-            </Field>
-            <Field label="Relieving factors">
-              <textarea
-                {...register("chief_complaint.relieving_factors")}
-                className={textareaClassName}
-              />
-            </Field>
-          </div>
-        ) : null}
+          </FormSection>
+        )}
 
-        {step === 2 ? (
-          <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {symptomCatalog.map((symptom) => {
-                const checked = selectedSymptoms.includes(symptom.key);
+        {step === 1 && (
+            <FormSection title="History of Present Illness">
+                <Field label="Describe the history of your present illness.">
+                    <textarea {...register("history_of_present_illness")} className={textareaClassName} />
+                </Field>
+            </FormSection>
+        )}
 
-                return (
-                  <button
-                    key={symptom.key}
-                    type="button"
-                    onClick={() => toggleSymptom(symptom.key)}
-                    className={clsx(
-                      "rounded-2xl border px-4 py-4 text-left transition-colors",
-                      checked
-                        ? "border-transparent bg-[color:var(--accent)] text-white"
-                        : "border-[color:var(--line)] bg-[color:var(--surface-strong)] text-[color:var(--foreground)]"
-                    )}
-                  >
-                    <div className="text-sm font-semibold">{symptom.label}</div>
-                    <div className="mt-2 text-xs opacity-75">
-                      {checked ? "Selected" : "Tap to include"}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <Field label="Custom symptoms">
-              <textarea
-                {...register("custom_symptoms")}
-                className={textareaClassName}
-                placeholder="One per line or comma separated"
-              />
-            </Field>
-          </div>
-        ) : null}
+        {step === 2 && (
+            <FormSection title="Review of Systems">
+                <Field label="Please list any symptoms or issues you are experiencing, organized by body system.">
+                    <textarea {...register("review_of_systems")} className={textareaClassName} />
+                </Field>
+            </FormSection>
+        )}
 
-        {step === 3 ? (
-          <div className="grid gap-4">
-            <Field label="Conditions">
-              <textarea
-                {...register("history.conditions")}
-                className={textareaClassName}
-                placeholder="Comma separated"
-              />
-            </Field>
-            <Field label="Medications">
-              <textarea
-                {...register("history.medications")}
-                className={textareaClassName}
-                placeholder="Comma separated"
-              />
-            </Field>
-            <Field label="Surgeries">
-              <textarea
-                {...register("history.surgeries")}
-                className={textareaClassName}
-                placeholder="Comma separated"
-              />
-            </Field>
-            <Field label="Family history">
-              <textarea
-                {...register("history.family_history")}
-                className={textareaClassName}
-                placeholder="Comma separated"
-              />
-            </Field>
-          </div>
-        ) : null}
+        {step === 3 && (
+            <FormSection title="Past Medical History">
+                <Field label="Please list any past medical conditions, surgeries, or hospitalizations.">
+                    <textarea {...register("past_medical_history")} className={textareaClassName} />
+                </Field>
+            </FormSection>
+        )}
 
-        {step === 4 ? (
-          <div className="grid gap-4">
-            <Field label="Diet">
-              <textarea
-                {...register("lifestyle.diet")}
-                className={textareaClassName}
-              />
-            </Field>
-            <Field label="Exercise">
-              <textarea
-                {...register("lifestyle.exercise")}
-                className={textareaClassName}
-              />
-            </Field>
-            <Field label="Sleep">
-              <textarea
-                {...register("lifestyle.sleep")}
-                className={textareaClassName}
-              />
-            </Field>
-            <Field label="Stress">
-              <textarea
-                {...register("lifestyle.stress")}
-                className={textareaClassName}
-              />
-            </Field>
-            <Field label="Substance use">
-              <textarea
-                {...register("lifestyle.substance_use")}
-                className={textareaClassName}
-              />
-            </Field>
-          </div>
-        ) : null}
+        {step === 4 && (
+            <FormSection title="Medications">
+                <Field label="Please list all medications you are currently taking, including dosage and frequency.">
+                    <textarea {...register("medications")} className={textareaClassName} />
+                </Field>
+            </FormSection>
+        )}
 
-        {step === 5 ? (
-          <div className="grid gap-4">
-            <Field label="Patient priorities">
-              <textarea
-                {...register("goals.patient_priorities")}
-                className={textareaClassName}
-                placeholder="Comma separated"
-              />
-            </Field>
-            <Field label="Expectations">
-              <textarea
-                {...register("goals.expectations")}
-                className={textareaClassName}
-              />
-            </Field>
-          </div>
-        ) : null}
+        {step === 5 && (
+            <FormSection title="Social History">
+                <div className="space-y-6">
+                    <h3 className="text-xl font-semibold text-gray-800">Environment</h3>
+                    <Field label="Housing Situation">
+                        <input {...register("social_history_environment.housing")} className={inputClassName} />
+                    </Field>
+                    <Field label="Occupation">
+                        <input {...register("social_history_environment.occupation")} className={inputClassName} />
+                    </Field>
+                    <Field label="Social Determinants of Health (SDOH)">
+                        <input {...register("social_history_environment.sdoh")} className={inputClassName} />
+                    </Field>
+                    <Field label="Toxins/Exposures">
+                        <input {...register("social_history_environment.toxins_exposures")} className={inputClassName} />
+                    </Field>
 
-        <div className="flex flex-col gap-3 border-t border-[color:var(--line)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-[color:var(--muted)]">
-            <span className="font-semibold text-[color:var(--foreground)]">
+                    <h3 className="mt-8 text-xl font-semibold text-gray-800">Body</h3>
+                    <Field label="Diet">
+                        <textarea {...register("social_history_body.diet")} className={textareaClassName} />
+                    </Field>
+                    <Field label="Exercise">
+                        <textarea {...register("social_history_body.exercise")} className={textareaClassName} />
+                    </Field>
+                    <Field label="Substance Use">
+                        <textarea {...register("social_history_body.substance_use")} className={textareaClassName} />
+                    </Field>
+
+                    <h3 className="mt-8 text-xl font-semibold text-gray-800">Mind</h3>
+                    <Field label="Stress">
+                        <textarea {...register("social_history_mind.stress")} className={textareaClassName} />
+                    </Field>
+                    <Field label="Social Support">
+                        <textarea {...register("social_history_mind.social_support")} className={textareaClassName} />
+                    </Field>
+                    <Field label="Relationships">
+                        <textarea {...register("social_history_mind.relationships")} className={textareaClassName} />
+                    </Field>
+                </div>
+            </FormSection>
+        )}
+
+        <div className="flex flex-col gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-gray-500">
+            <span className="font-semibold text-gray-800">
               {props.submissionStatus}
             </span>
           </div>
@@ -366,7 +163,7 @@ export function PatientIntakeForm(props: {
             <button
               type="button"
               onClick={() => setStep((current) => Math.max(0, current - 1))}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-[color:var(--line)] px-4 py-3 text-sm font-semibold"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
             >
               <ChevronLeft className="h-4 w-4" />
               Back
@@ -374,12 +171,8 @@ export function PatientIntakeForm(props: {
             {step < stepLabels.length - 1 ? (
               <button
                 type="button"
-                onClick={() =>
-                  setStep((current) =>
-                    Math.min(stepLabels.length - 1, current + 1)
-                  )
-                }
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--foreground)] px-4 py-3 text-sm font-semibold text-[color:var(--background)]"
+                onClick={() => setStep((current) => Math.min(stepLabels.length - 1, current + 1))}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700"
               >
                 Next
                 <ChevronRight className="h-4 w-4" />
@@ -388,7 +181,7 @@ export function PatientIntakeForm(props: {
               <button
                 type="submit"
                 disabled={props.isSubmitting}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--accent)] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-md hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {props.isSubmitting ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -400,15 +193,25 @@ export function PatientIntakeForm(props: {
             )}
           </div>
         </div>
-        {props.submissionError ? (
-          <div className="rounded-2xl border border-[color:var(--danger)]/30 bg-[color:var(--danger)]/8 px-4 py-3 text-sm text-[color:var(--danger)]">
+        {props.submissionError && (
+          <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
             {props.submissionError}
           </div>
-        ) : null}
+        )}
       </form>
     </div>
   );
 }
+
+function FormSection(props: { title: string; children: React.ReactNode }) {
+    return (
+        <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-bold tracking-tight text-gray-900">{props.title}</h2>
+            <div className="space-y-4">{props.children}</div>
+        </div>
+    );
+}
+
 
 function Field(props: {
   label: string;
@@ -417,16 +220,16 @@ function Field(props: {
 }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-semibold">{props.label}</span>
+      <span className="font-medium text-gray-800">{props.label}</span>
       {props.children}
-      {props.error ? (
-        <span className="text-sm text-[color:var(--danger)]">{props.error}</span>
-      ) : null}
+      {props.error && (
+        <span className="text-sm text-red-600">{props.error}</span>
+      )}
     </label>
   );
 }
 
 const inputClassName =
-  "w-full rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface-strong)] px-4 py-3 outline-none transition focus:border-[color:var(--accent)]";
+  "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-base text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50";
 
-const textareaClassName = `${inputClassName} min-h-28 resize-y`;
+const textareaClassName = `${inputClassName} min-h-32 resize-y`;
