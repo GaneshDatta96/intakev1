@@ -144,13 +144,15 @@ function AssessmentView({ assessments }: { assessments: DashboardCase['assessmen
             <Chip label="Severity" value={assessment.severity} />
           </div>
           <Accordion title="Plan" icon={FileText}>
-            <p><strong>Medications:</strong> {assessment.plan.medications.summary}</p>
-            <p><strong>Testing:</strong> {assessment.plan.testing.summary}</p>
-            <p><strong>Referrals:</strong> {assessment.plan.referrals.summary}</p>
-            <p><strong>Lifestyle:</strong> {assessment.plan.lifestyle.summary}</p>
-            <p><strong>Monitoring:</strong> {assessment.plan.monitoring.summary}</p>
-            <p><strong>Follow-up:</strong> {assessment.plan.follow_up.summary}</p>
-            <p><strong>Preventive Care:</strong> {assessment.plan.preventive_care.summary}</p>
+            <div className="space-y-2">
+              <EditablePlanItem label="Medications" initialValue={assessment.plan.medications.summary} />
+              <EditablePlanItem label="Testing" initialValue={assessment.plan.testing.summary} />
+              <EditablePlanItem label="Referrals" initialValue={assessment.plan.referrals.summary} />
+              <EditablePlanItem label="Lifestyle" initialValue={assessment.plan.lifestyle.summary} />
+              <EditablePlanItem label="Monitoring" initialValue={assessment.plan.monitoring.summary} />
+              <EditablePlanItem label="Follow-up" initialValue={assessment.plan.follow_up.summary} />
+              <EditablePlanItem label="Preventive Care" initialValue={assessment.plan.preventive_care.summary} />
+            </div>
           </Accordion>
         </div>
       ))}
@@ -165,4 +167,40 @@ function Chip({ label, value }: { label: string; value: string; }) {
             <span className="font-semibold">{label}:</span> {value}
         </div>
     )
+}
+
+// Component for editable plan items
+function EditablePlanItem({ label, initialValue }: { label: string; initialValue: string; }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [value, setValue] = useState(initialValue);
+
+    const handleSave = () => {
+        setIsEditing(false);
+        // Here you would typically trigger an API call to save the changes.
+        // For now, we just update the local state.
+    };
+
+    return (
+        <div className="flex items-start gap-4">
+            <strong className="w-32 flex-shrink-0">{label}:</strong>
+            {isEditing ? (
+                <div className="flex-grow">
+                    <textarea
+                        value={value}
+                        onChange={(e) => setValue(e.target.value)}
+                        className="w-full rounded-md border border-gray-300 p-2 text-sm"
+                        rows={3}
+                    />
+                    <div className="mt-2 flex gap-2">
+                        <button onClick={handleSave} className="rounded-md bg-blue-600 px-3 py-1 text-sm font-semibold text-white">Save</button>
+                        <button onClick={() => { setIsEditing(false); setValue(initialValue); }} className="rounded-md bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-700">Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <p onClick={() => setIsEditing(true)} className="flex-grow cursor-pointer rounded-md p-2 hover:bg-gray-100">
+                    {value || <span className="text-gray-400">Click to add...</span>}
+                </p>
+            )}
+        </div>
+    );
 }
