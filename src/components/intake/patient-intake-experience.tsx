@@ -10,7 +10,7 @@ import {
   type AppointmentRequestInput,
   type AppointmentRequestValues,
 } from "@/lib/schemas/intake";
-import { type SubjectiveNote } from "@/lib/schemas/modern-soap";
+import { type PatientIntakeQuestionnaire } from "@/lib/schemas/modern-soap";
 import { PatientCreationForm, type PatientDetails } from "./patient-creation-form";
 
 type SubmissionState = {
@@ -71,7 +71,7 @@ export function PatientIntakeExperience(props: {
     window.setTimeout(() => setCopiedLink(false), 2000);
   }
 
-  async function submitIntake(values: SubjectiveNote) {
+  async function submitIntake(values: PatientIntakeQuestionnaire) {
     setSubmission({
       isSubmitted: false,
       pending: true,
@@ -141,8 +141,9 @@ export function PatientIntakeExperience(props: {
                 Thank you. The intake has been sent to the clinic.
               </h1>
               <p className="max-w-3xl leading-7 text-[color:var(--muted)]">
-                The answers have been structured and added to the practitioner
-                dashboard so the doctor can review them before the visit.
+                The structured subjective and objective intake has been added to
+                the practitioner workflow so the doctor can review it before
+                the visit.
               </p>
             </div>
           </div>
@@ -150,7 +151,7 @@ export function PatientIntakeExperience(props: {
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {[
               "The intake is organized into a clean clinical summary.",
-              "SOAP-ready context is prepared for the practitioner view.",
+              "SOAP-ready context is prepared from the structured S and O sections.",
               "The clinic can review the case and follow up from the dashboard.",
             ].map((item) => (
               <div

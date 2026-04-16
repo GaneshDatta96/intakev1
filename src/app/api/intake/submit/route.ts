@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { processIntakeSubmission } from "@/lib/intake/workflow";
 import { createRequestLog, logError, logInfo, logWarn } from "@/lib/logging/logger";
-import { subjectiveNoteSchema } from "@/lib/schemas/modern-soap";
+import { patientIntakeQuestionnaireSchema } from "@/lib/schemas/modern-soap";
 
 export async function POST(request: Request) {
   const startedAt = Date.now();
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const input = subjectiveNoteSchema.parse(body);
+    const input = patientIntakeQuestionnaireSchema.parse(body);
     const processed = await processIntakeSubmission(input);
 
     if (!processed.persisted) {

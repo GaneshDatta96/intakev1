@@ -4,6 +4,7 @@ import {
   type SoapDraft,
 } from "@/lib/schemas/soap";
 import { type NormalizedIntake } from "@/lib/schemas/intake";
+import { type PatientIntakeQuestionnaire } from "@/lib/schemas/modern-soap";
 
 const PROMPT_VERSION = "soap_v1";
 
@@ -40,6 +41,7 @@ function joinSentence(items: string[]) {
 export function buildFallbackSoap(
   intake: NormalizedIntake,
   assessmentResults: AssessmentResult[],
+  questionnaire?: PatientIntakeQuestionnaire,
 ): SoapDraft {
   const symptomLabels = intake.symptoms
     .slice(0, 5)
@@ -64,12 +66,25 @@ export function buildFallbackSoap(
     .filter(Boolean)
     .join(" ");
 
+  const objectiveFromQuestionnaire = questionnaire
+    ? [
+        `Patient-reported demographics include age ${questionnaire.objective.demographics.age}, sex at birth ${questionnaire.objective.demographics.sex_at_birth.toLowerCase()}, and gender identity ${questionnaire.objective.demographics.gender_identity.toLowerCase()}.`,
+        `Patient-reported vitals include height ${questionnaire.objective.vitals.height}, weight ${questionnaire.objective.vitals.weight}, blood pressure ${questionnaire.objective.vitals.blood_pressure}, and heart rate ${questionnaire.objective.vitals.heart_rate}.`,
+        `Patient-reported physical exam information: ${questionnaire.objective.physical_exam.summary}.`,
+        `Patient-reported labs and imaging: ${questionnaire.objective.labs_and_imaging.summary}.`,
+        `Patient-reported risk scores: ${questionnaire.objective.risk_scores.summary}.`,
+      ]
+    : [];
+
   const objective = [
-    "Objective is limited to intake-derived information only.",
+    questionnaire
+      ? "Objective includes patient-reported demographic and clinical data supplied through the intake."
+      : "Objective is limited to intake-derived information only.",
     `Reported symptom severity is ${intake.chief_complaint.severity_0_10}/10.`,
+    ...objectiveFromQuestionnaire,
     intake.red_flags.length > 0
       ? `Reported red flag items requiring clinician review include ${joinSentence(intake.red_flags.map((flag) => flag.replaceAll("_", " ")))}.`
-      : "No exam findings, vitals, imaging, or laboratory data were supplied in the submitted intake.",
+      : "No additional red flag items were identified from the submitted intake.",
   ].join(" ");
 
   const assessmentLines = assessmentResults.map((item) => {
@@ -135,8 +150,9 @@ function extractJsonContent(content: unknown) {
 export async function generateSoapDraft(args: {
   intake: NormalizedIntake;
   assessmentResults: AssessmentResult[];
+  questionnaire?: PatientIntakeQuestionnaire;
 }) {
-  const { intake, assessmentResults } = args;
+  const { intake, assessmentResults, questionnaire } = args;
   const apiKey = process.env.OPENROUTER_API_KEY;
   const model = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini";
 
@@ -145,7 +161,7 @@ export async function generateSoapDraft(args: {
       promptVersion: PROMPT_VERSION,
       model: "fallback/local-template",
       usedFallback: true,
-      soap: buildFallbackSoap(intake, assessmentResults),
+      soap: buildFallbackSoap(intake, assessmentResults, questionnaire),
     };
   }
 
@@ -172,6 +188,10 @@ export async function generateSoapDraft(args: {
               2,
             )}\n\nASSESSMENT_RESULTS:\n${JSON.stringify(
               assessmentResults,
+              null,
+              2,
+            )}\n\nQUESTIONNAIRE_JSON:\n${JSON.stringify(
+              questionnaire ?? null,
               null,
               2,
             )}\n\nTASK:\nWrite Subjective, Objective, Assessment, and a minimal editable plan draft.`,
@@ -224,7 +244,7 @@ export async function generateSoapDraft(args: {
       promptVersion: PROMPT_VERSION,
       model: "fallback/local-template",
       usedFallback: true,
-      soap: buildFallbackSoap(intake, assessmentResults),
+      soap: buildFallbackSoap(intake, assessmentResults, questionnaire),
     };
   }
 }

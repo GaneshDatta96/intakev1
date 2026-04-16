@@ -7,7 +7,7 @@ import {
   type IntakeFormInput,
   type NormalizedIntake,
 } from "@/lib/schemas/intake";
-import { type SubjectiveNote } from "@/lib/schemas/modern-soap";
+import { type PatientIntakeQuestionnaire } from "@/lib/schemas/modern-soap";
 import { type AssessmentResult, type SoapDraft } from "@/lib/schemas/soap";
 
 export type ProcessedEncounter = {
@@ -88,52 +88,92 @@ async function resolvePatientContext(patientId: string) {
   };
 }
 
+function joinSections(sections: string[]) {
+  return sections
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function processIntakeSubmission(
-  input: SubjectiveNote
+  input: PatientIntakeQuestionnaire
 ): Promise<ProcessedEncounter> {
   const { supabase, patient } = await resolvePatientContext(input.patient_id);
   const primaryIssue =
-    input.chief_complaint.summary.trim() || "Patient concern not specified";
-  const questionnaireHistory = input.history_of_present_illness.summary.trim();
+    input.subjective.chief_complaint.summary.trim() ||
+    "Patient concern not specified";
+  const hpi = input.subjective.history_of_present_illness;
+  const ros = input.subjective.review_of_systems;
+  const pmh = input.subjective.past_medical_history;
+  const medications = input.subjective.medications;
+  const social = input.subjective.social_history;
+  const objective = input.objective;
 
   const transformedInput: IntakeFormInput = {
     patient_info: {
       first_name: patient.firstName,
       last_name: patient.lastName,
-      age: 0,
-      sex_at_birth: patient.sexAtBirth,
-      gender_identity: patient.genderIdentity,
+      age: objective.demographics.age,
+      sex_at_birth: objective.demographics.sex_at_birth || patient.sexAtBirth,
+      gender_identity:
+        objective.demographics.gender_identity || patient.genderIdentity,
       phone: patient.phone,
       email: patient.email,
     },
     chief_complaint: {
       primary_issue: primaryIssue,
-      duration: "Not specified in questionnaire",
-      severity_0_10: 5,
-      onset: questionnaireHistory,
-      aggravating_factors: "",
-      relieving_factors: "",
+      duration: hpi.duration,
+      severity_0_10: hpi.severity_0_10,
+      onset: hpi.onset,
+      aggravating_factors: hpi.aggravating_factors,
+      relieving_factors: hpi.relieving_factors,
     },
     symptom_keys: [],
-    custom_symptoms: input.review_of_systems.summary,
+    custom_symptoms: joinSections([
+      `Constitutional: ${ros.constitutional}`,
+      `Cardiovascular: ${ros.cardiovascular}`,
+      `Respiratory: ${ros.respiratory}`,
+      `Gastrointestinal: ${ros.gastrointestinal}`,
+      `Neurological: ${ros.neurological}`,
+      `Musculoskeletal: ${ros.musculoskeletal}`,
+      `Other: ${ros.other}`,
+    ]),
     history: {
-      conditions: input.past_medical_history.summary,
-      medications: input.medications.summary,
-      surgeries: "",
-      family_history: "",
+      conditions: joinSections([
+        pmh.medical_conditions,
+        `Allergies: ${pmh.allergies}`,
+      ]),
+      medications: joinSections([
+        `Prescriptions: ${medications.prescriptions}`,
+        `OTC / Supplements: ${medications.otc_supplements}`,
+        `Adherence issues: ${medications.adherence_issues}`,
+      ]),
+      surgeries: pmh.surgeries_hospitalizations,
+      family_history: pmh.family_history,
     },
     lifestyle: {
-      diet: input.social_history.body.summary,
-      exercise: "",
-      sleep: "",
-      stress: input.social_history.mind.summary,
-      substance_use: "",
+      diet: social.body.diet,
+      exercise: social.body.exercise,
+      sleep: "Not specifically collected in questionnaire",
+      stress: social.mind.stress,
+      substance_use: social.body.substance_use,
     },
     goals: {
-      patient_priorities: "",
-      expectations: primaryIssue,
+      patient_priorities: joinSections([
+        `Prior evaluation / treatment: ${hpi.prior_evaluation_treatment}`,
+        `Housing: ${social.environment.housing}`,
+        `Occupation: ${social.environment.occupation}`,
+        `SDOH: ${social.environment.sdoh}`,
+        `Toxins / exposures: ${social.environment.toxins_exposures}`,
+        `Social support: ${social.mind.social_support}`,
+        `Relationships: ${social.mind.relationships}`,
+        `Physical exam: ${objective.physical_exam.summary}`,
+        `Labs / imaging: ${objective.labs_and_imaging.summary}`,
+        `Risk scores: ${objective.risk_scores.summary}`,
+      ]),
+      expectations: hpi.course,
     },
-    metadata: { source: "web-modern" },
+    metadata: { source: "web-modern-structured" },
   };
 
   const normalizedIntake = normalizeIntakeSubmission(transformedInput);
@@ -141,6 +181,7 @@ export async function processIntakeSubmission(
   const generated = await generateSoapDraft({
     intake: normalizedIntake,
     assessmentResults,
+    questionnaire: input,
   });
   const encounterId = crypto.randomUUID();
   const patientId = patient.patientId;
