@@ -10,3 +10,7 @@ Build Log Initialized.
 - Created src/lib/utils.ts for cn utility.
 - Created tailwind.config.js with aurora animations.
 - Applied AuroraBackground to the homepage (src/app/page.tsx).
+
+[2026-04-16] - fix: Resolve 400 error on intake submission
+- Aligned the API schema in /api/intake/submit/route.ts to use subjectiveNoteSchema.
+- Added a temporary data transformation in lib/intake/workflow.ts to map the new subjectiveNoteSchema back to the old IntakeFormInput format, ensuring compatibility with the existing processing pipeline.

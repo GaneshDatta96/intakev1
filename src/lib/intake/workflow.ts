@@ -7,6 +7,7 @@ import {
   type IntakeFormInput,
   type NormalizedIntake,
 } from "@/lib/schemas/intake";
+import { type SubjectiveNote } from "@/lib/schemas/modern-soap";
 import { type AssessmentResult, type SoapDraft } from "@/lib/schemas/soap";
 
 export type ProcessedEncounter = {
@@ -23,9 +24,49 @@ export type ProcessedEncounter = {
 };
 
 export async function processIntakeSubmission(
-  input: IntakeFormInput,
+  input: SubjectiveNote
 ): Promise<ProcessedEncounter> {
-  const normalizedIntake = normalizeIntakeSubmission(input);
+  const transformedInput: IntakeFormInput = {
+    patient_info: {
+      first_name: "",
+      last_name: "",
+      age: 0,
+      sex_at_birth: "",
+      gender_identity: "",
+      phone: "",
+      email: "",
+    },
+    chief_complaint: {
+      primary_issue: input.chief_complaint.summary,
+      duration: "",
+      severity_0_10: 0,
+      onset: "",
+      aggravating_factors: "",
+      relieving_factors: "",
+    },
+    symptom_keys: [],
+    custom_symptoms: "",
+    history: {
+      conditions: input.past_medical_history.summary,
+      medications: input.medications.summary,
+      surgeries: "",
+      family_history: "",
+    },
+    lifestyle: {
+      diet: input.social_history.body.summary,
+      exercise: "",
+      sleep: "",
+      stress: input.social_history.mind.summary,
+      substance_use: "",
+    },
+    goals: {
+      patient_priorities: "",
+      expectations: "",
+    },
+    metadata: { source: "web-modern" },
+  };
+
+  const normalizedIntake = normalizeIntakeSubmission(transformedInput);
   const assessmentResults = scorePatterns(normalizedIntake);
   const generated = await generateSoapDraft({
     intake: normalizedIntake,
