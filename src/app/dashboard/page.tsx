@@ -1,10 +1,10 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { getDashboardCases } from "@/lib/dashboard/dashboard-data";
+import { getSampleCases } from "@/lib/demo/sample-cases";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const cases = await getDashboardCases();
+  const cases = await getSampleCases();
 
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-5 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">

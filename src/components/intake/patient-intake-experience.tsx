@@ -5,12 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { PatientIntakeForm } from "@/components/intake/patient-intake-form";
-import {
-  appointmentRequestSchema,
-  type AppointmentRequestInput,
-  type AppointmentRequestValues,
-  type IntakeFormInput,
-} from "@/lib/schemas/intake";
+import { appointmentRequestSchema, type AppointmentRequestInput, type AppointmentRequestValues } from "@/lib/schemas/intake";
+import { subjectiveNoteSchema, type SubjectiveNote } from "@/lib/schemas/modern-soap";
 
 type SubmissionState = {
   isSubmitted: boolean;
@@ -40,7 +36,7 @@ export function PatientIntakeExperience() {
     skipped: false,
   });
 
-  async function submitIntake(values: IntakeFormInput) {
+  async function submitIntake(values: SubjectiveNote) {
     setSubmission({
       isSubmitted: false,
       pending: true,
@@ -203,6 +199,7 @@ export function PatientIntakeExperience() {
 
       <section className="glass-panel rounded-[2rem] p-6 sm:p-8">
         <PatientIntakeForm
+          patientId="new"
           onSubmit={submitIntake}
           isSubmitting={submission.pending}
           submissionStatus={submission.status}

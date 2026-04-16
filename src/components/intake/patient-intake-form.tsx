@@ -37,15 +37,16 @@ export function PatientIntakeForm(props: {
   const { register, handleSubmit } = useForm<SubjectiveNote>({
     resolver: zodResolver(subjectiveNoteSchema),
     defaultValues: {
-        patient_id: props.patientId,
-        chief_complaint: "",
-        history_of_present_illness: "",
-        review_of_systems: "",
-        past_medical_history: "",
-        medications: "",
-        social_history_environment: { housing: "", occupation: "", sdoh: "", toxins_exposures: "" },
-        social_history_body: { diet: "", exercise: "", substance_use: "" },
-        social_history_mind: { stress: "", social_support: "", relationships: "" },
+        chief_complaint: { summary: "" },
+        history_of_present_illness: { summary: "" },
+        review_of_systems: { summary: "" },
+        past_medical_history: { summary: "" },
+        medications: { summary: "" },
+        social_history: {
+            environment: { summary: "" },
+            body: { summary: "" },
+            mind: { summary: "" },
+        },
     }
   });
 
@@ -74,7 +75,7 @@ export function PatientIntakeForm(props: {
         {step === 0 && (
           <FormSection title="Chief Complaint">
             <Field label="What is the primary reason for your visit today?">
-                <textarea {...register("chief_complaint")} className={textareaClassName} />
+                <textarea {...register("chief_complaint.summary")} className={textareaClassName} />
             </Field>
           </FormSection>
         )}
@@ -82,7 +83,7 @@ export function PatientIntakeForm(props: {
         {step === 1 && (
             <FormSection title="History of Present Illness">
                 <Field label="Describe the history of your present illness.">
-                    <textarea {...register("history_of_present_illness")} className={textareaClassName} />
+                    <textarea {...register("history_of_present_illness.summary")} className={textareaClassName} />
                 </Field>
             </FormSection>
         )}
@@ -90,7 +91,7 @@ export function PatientIntakeForm(props: {
         {step === 2 && (
             <FormSection title="Review of Systems">
                 <Field label="Please list any symptoms or issues you are experiencing, organized by body system.">
-                    <textarea {...register("review_of_systems")} className={textareaClassName} />
+                    <textarea {...register("review_of_systems.summary")} className={textareaClassName} />
                 </Field>
             </FormSection>
         )}
@@ -98,7 +99,7 @@ export function PatientIntakeForm(props: {
         {step === 3 && (
             <FormSection title="Past Medical History">
                 <Field label="Please list any past medical conditions, surgeries, or hospitalizations.">
-                    <textarea {...register("past_medical_history")} className={textareaClassName} />
+                    <textarea {...register("past_medical_history.summary")} className={textareaClassName} />
                 </Field>
             </FormSection>
         )}
@@ -106,7 +107,7 @@ export function PatientIntakeForm(props: {
         {step === 4 && (
             <FormSection title="Medications">
                 <Field label="Please list all medications you are currently taking, including dosage and frequency.">
-                    <textarea {...register("medications")} className={textareaClassName} />
+                    <textarea {...register("medications.summary")} className={textareaClassName} />
                 </Field>
             </FormSection>
         )}
@@ -116,39 +117,21 @@ export function PatientIntakeForm(props: {
                 <div className="space-y-6">
                     <h3 className="text-xl font-semibold text-gray-800">Environment</h3>
                     <Field label="Housing Situation">
-                        <input {...register("social_history_environment.housing")} className={inputClassName} />
+                        <textarea {...register("social_history.environment.summary")} className={inputClassName} />
                     </Field>
-                    <Field label="Occupation">
-                        <input {...register("social_history_environment.occupation")} className={inputClassName} />
-                    </Field>
-                    <Field label="Social Determinants of Health (SDOH)">
-                        <input {...register("social_history_environment.sdoh")} className={inputClassName} />
-                    </Field>
-                    <Field label="Toxins/Exposures">
-                        <input {...register("social_history_environment.toxins_exposures")} className={inputClassName} />
-                    </Field>
+
 
                     <h3 className="mt-8 text-xl font-semibold text-gray-800">Body</h3>
                     <Field label="Diet">
-                        <textarea {...register("social_history_body.diet")} className={textareaClassName} />
+                        <textarea {...register("social_history.body.summary")} className={textareaClassName} />
                     </Field>
-                    <Field label="Exercise">
-                        <textarea {...register("social_history_body.exercise")} className={textareaClassName} />
-                    </Field>
-                    <Field label="Substance Use">
-                        <textarea {...register("social_history_body.substance_use")} className={textareaClassName} />
-                    </Field>
+
 
                     <h3 className="mt-8 text-xl font-semibold text-gray-800">Mind</h3>
                     <Field label="Stress">
-                        <textarea {...register("social_history_mind.stress")} className={textareaClassName} />
+                        <textarea {...register("social_history.mind.summary")} className={textareaClassName} />
                     </Field>
-                    <Field label="Social Support">
-                        <textarea {...register("social_history_mind.social_support")} className={textareaClassName} />
-                    </Field>
-                    <Field label="Relationships">
-                        <textarea {...register("social_history_mind.relationships")} className={textareaClassName} />
-                    </Field>
+
                 </div>
             </FormSection>
         )}

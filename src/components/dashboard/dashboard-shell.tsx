@@ -9,7 +9,7 @@ import {
   Stethoscope,
   User,
 } from "lucide-react";
-import { type DashboardCase } from "@/lib/demo/sample-cases";
+import { type DashboardCase } from "@/lib/schemas/modern-soap";
 
 // Main Dashboard Shell
 export function DashboardShell({ cases }: { cases: DashboardCase[] }) {
@@ -65,7 +65,7 @@ function PatientListItem({ item, isActive, onClick }: { item: DashboardCase; isA
       className={`w-full rounded-xl p-4 text-left transition-colors ${isActive ? "bg-blue-600 text-white shadow-md" : "bg-gray-100 hover:bg-gray-200"}`}>
       <p className="font-semibold">{item.patient.first_name} {item.patient.last_name}</p>
       <p className={`mt-1 text-sm ${isActive ? "text-blue-100" : "text-gray-500"}`}>
-        {item.subjective.chief_complaint}
+        {item.subjective.chief_complaint.summary}
       </p>
     </button>
   );
@@ -105,15 +105,15 @@ function Accordion({ title, children, icon: Icon }: { title: string; children: R
 function SubjectiveView({ subjective }: { subjective: DashboardCase['subjective']; }) {
     return (
         <Accordion title="Subjective" icon={User}>
-            <p><strong>Chief Complaint:</strong> {subjective.chief_complaint}</p>
-            <p><strong>History of Present Illness:</strong> {subjective.history_of_present_illness}</p>
-            <p><strong>Review of Systems:</strong> {subjective.review_of_systems}</p>
-            <p><strong>Past Medical History:</strong> {subjective.past_medical_history}</p>
-            <p><strong>Medications:</strong> {subjective.medications}</p>
+            <p><strong>Chief Complaint:</strong> {subjective.chief_complaint.summary}</p>
+            <p><strong>History of Present Illness:</strong> {subjective.history_of_present_illness.summary}</p>
+            <p><strong>Review of Systems:</strong> {subjective.review_of_systems.summary}</p>
+            <p><strong>Past Medical History:</strong> {subjective.past_medical_history.summary}</p>
+            <p><strong>Medications:</strong> {subjective.medications.summary}</p>
             <Accordion title="Social History" icon={FileText}>
-                <p><strong>Environment:</strong> Housing: {subjective.social_history.environment.housing}, Occupation: {subjective.social_history.environment.occupation}</p>
-                <p><strong>Body:</strong> Diet: {subjective.social_history.body.diet}, Exercise: {subjective.social_history.body.exercise}</p>
-                <p><strong>Mind:</strong> Stress: {subjective.social_history.mind.stress}, Support: {subjective.social_history.mind.support}</p>
+                <p><strong>Environment:</strong> {subjective.social_history.environment.summary}</p>
+                <p><strong>Body:</strong> {subjective.social_history.body.summary}</p>
+                <p><strong>Mind:</strong> {subjective.social_history.mind.summary}</p>
             </Accordion>
         </Accordion>
     );
@@ -123,11 +123,11 @@ function SubjectiveView({ subjective }: { subjective: DashboardCase['subjective'
 function ObjectiveView({ objective }: { objective: DashboardCase['objective']; }) {
     return (
         <Accordion title="Objective" icon={HeartPulse}>
-            <p><strong>Age:</strong> {objective.demographics.age}</p>
-            <p><strong>Vitals:</strong> {objective.vitals}</p>
-            <p><strong>Physical Exam:</strong> {objective.physical_exam}</p>
-            <p><strong>Labs & Imaging:</strong> {objective.labs}</p>
-            <p><strong>Risk Scores:</strong> {objective.risk_scores}</p>
+            <p><strong>Age:</strong> {objective.demographics.summary}</p>
+            <p><strong>Vitals:</strong> {objective.vitals.summary}</p>
+            <p><strong>Physical Exam:</strong> {objective.physical_exam.summary}</p>
+            <p><strong>Labs & Imaging:</strong> {objective.labs_and_imaging.summary}</p>
+            <p><strong>Risk Scores:</strong> {objective.risk_scores.summary}</p>
         </Accordion>
     );
 }
@@ -144,13 +144,13 @@ function AssessmentView({ assessments }: { assessments: DashboardCase['assessmen
             <Chip label="Severity" value={assessment.severity} />
           </div>
           <Accordion title="Plan" icon={FileText}>
-            <p><strong>Medications:</strong> {assessment.plan.medications}</p>
-            <p><strong>Testing:</strong> {assessment.plan.testing}</p>
-            <p><strong>Referrals:</strong> {assessment.plan.referrals}</p>
-            <p><strong>Lifestyle:</strong> Diet: {assessment.plan.lifestyle.diet}, Exercise: {assessment.plan.lifestyle.exercise}</p>
-            <p><strong>Monitoring:</strong> {assessment.plan.monitoring.home_bp}, {assessment.plan.monitoring.symptoms}</p>
-            <p><strong>Follow-up:</strong> {assessment.plan.follow_up.timing} ({assessment.plan.follow_up.goals})</p>
-            <p><strong>Preventive Care:</strong> {assessment.plan.preventive_care}</p>
+            <p><strong>Medications:</strong> {assessment.plan.medications.summary}</p>
+            <p><strong>Testing:</strong> {assessment.plan.testing.summary}</p>
+            <p><strong>Referrals:</strong> {assessment.plan.referrals.summary}</p>
+            <p><strong>Lifestyle:</strong> {assessment.plan.lifestyle.summary}</p>
+            <p><strong>Monitoring:</strong> {assessment.plan.monitoring.summary}</p>
+            <p><strong>Follow-up:</strong> {assessment.plan.follow_up.summary}</p>
+            <p><strong>Preventive Care:</strong> {assessment.plan.preventive_care.summary}</p>
           </Accordion>
         </div>
       ))}
