@@ -14,6 +14,7 @@ const subjectiveSocialHistorySchema = z.object({
 });
 
 export const subjectiveNoteSchema = z.object({
+  patient_id: z.string().uuid(),
   chief_complaint: expandableString,
   history_of_present_illness: expandableString,
   review_of_systems: expandableString,

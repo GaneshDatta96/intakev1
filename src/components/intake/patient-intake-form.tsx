@@ -37,6 +37,7 @@ export function PatientIntakeForm(props: {
   const { register, handleSubmit } = useForm<SubjectiveNote>({
     resolver: zodResolver(subjectiveNoteSchema),
     defaultValues: {
+        patient_id: props.patientId,
         chief_complaint: { summary: "" },
         history_of_present_illness: { summary: "" },
         review_of_systems: { summary: "" },

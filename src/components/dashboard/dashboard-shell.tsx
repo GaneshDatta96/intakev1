@@ -91,7 +91,7 @@ function PatientDetail({ case: activeCase }: { case: DashboardCase }) {
 // Accordion component for expandable sections
 function Accordion({ title, children, icon: Icon }: { title: string; children: React.ReactNode; icon: React.ElementType; }) {
   return (
-    <details className="group rounded-lg border bg-gray-50 p-4">
+    <details open className="group rounded-lg border bg-gray-50 p-4">
       <summary className="flex cursor-pointer items-center gap-3 font-semibold text-gray-800">
         <Icon className="h-5 w-5 text-gray-500" />
         {title}
