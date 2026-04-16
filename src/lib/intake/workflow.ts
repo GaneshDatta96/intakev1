@@ -23,29 +23,99 @@ export type ProcessedEncounter = {
   tokenUsage?: unknown;
 };
 
+type ResolvedPatientContext = {
+  patientId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  sexAtBirth: string;
+  genderIdentity: string;
+  existsInDatabase: boolean;
+};
+
+function buildFallbackPatientContext(patientId: string): ResolvedPatientContext {
+  return {
+    patientId,
+    firstName: "Demo",
+    lastName: "Patient",
+    email: "",
+    phone: "",
+    sexAtBirth: "Not specified",
+    genderIdentity: "",
+    existsInDatabase: false,
+  };
+}
+
+async function resolvePatientContext(patientId: string) {
+  const supabase = getSupabaseAdmin();
+  const fallback = buildFallbackPatientContext(patientId);
+
+  if (!supabase) {
+    return {
+      supabase,
+      patient: fallback,
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("patients")
+    .select(
+      "id, first_name, last_name, email, phone, sex_at_birth, gender_identity",
+    )
+    .eq("id", patientId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return {
+      supabase,
+      patient: fallback,
+    };
+  }
+
+  return {
+    supabase,
+    patient: {
+      patientId: data.id,
+      firstName: data.first_name?.trim() || fallback.firstName,
+      lastName: data.last_name?.trim() || fallback.lastName,
+      email: data.email?.trim() || "",
+      phone: data.phone?.trim() || "",
+      sexAtBirth: data.sex_at_birth?.trim() || fallback.sexAtBirth,
+      genderIdentity: data.gender_identity?.trim() || "",
+      existsInDatabase: true,
+    },
+  };
+}
+
 export async function processIntakeSubmission(
   input: SubjectiveNote
 ): Promise<ProcessedEncounter> {
+  const { supabase, patient } = await resolvePatientContext(input.patient_id);
+  const primaryIssue =
+    input.chief_complaint.summary.trim() || "Patient concern not specified";
+  const questionnaireHistory = input.history_of_present_illness.summary.trim();
+
   const transformedInput: IntakeFormInput = {
     patient_info: {
-      first_name: "",
-      last_name: "",
+      first_name: patient.firstName,
+      last_name: patient.lastName,
       age: 0,
-      sex_at_birth: "",
-      gender_identity: "",
-      phone: "",
-      email: "",
+      sex_at_birth: patient.sexAtBirth,
+      gender_identity: patient.genderIdentity,
+      phone: patient.phone,
+      email: patient.email,
     },
     chief_complaint: {
-      primary_issue: input.chief_complaint.summary,
-      duration: "",
-      severity_0_10: 0,
-      onset: "",
+      primary_issue: primaryIssue,
+      duration: "Not specified in questionnaire",
+      severity_0_10: 5,
+      onset: questionnaireHistory,
       aggravating_factors: "",
       relieving_factors: "",
     },
     symptom_keys: [],
-    custom_symptoms: "",
+    custom_symptoms: input.review_of_systems.summary,
     history: {
       conditions: input.past_medical_history.summary,
       medications: input.medications.summary,
@@ -61,7 +131,7 @@ export async function processIntakeSubmission(
     },
     goals: {
       patient_priorities: "",
-      expectations: "",
+      expectations: primaryIssue,
     },
     metadata: { source: "web-modern" },
   };
@@ -73,24 +143,25 @@ export async function processIntakeSubmission(
     assessmentResults,
   });
   const encounterId = crypto.randomUUID();
-  const patientId = crypto.randomUUID();
-  const supabase = getSupabaseAdmin();
+  const patientId = patient.patientId;
   let persisted = false;
 
   if (supabase) {
-    const patientInsert = await supabase.from("patients").insert({
-      id: patientId,
-      first_name: normalizedIntake.patient_info.first_name,
-      last_name: normalizedIntake.patient_info.last_name,
-      dob: null,
-      sex_at_birth: normalizedIntake.patient_info.sex_at_birth,
-      gender_identity: normalizedIntake.patient_info.gender_identity,
-      phone: normalizedIntake.patient_info.contact.phone,
-      email: normalizedIntake.patient_info.contact.email,
-    });
+    if (!patient.existsInDatabase) {
+      const patientInsert = await supabase.from("patients").insert({
+        id: patientId,
+        first_name: normalizedIntake.patient_info.first_name,
+        last_name: normalizedIntake.patient_info.last_name,
+        dob: null,
+        sex_at_birth: normalizedIntake.patient_info.sex_at_birth,
+        gender_identity: normalizedIntake.patient_info.gender_identity,
+        phone: normalizedIntake.patient_info.contact.phone,
+        email: normalizedIntake.patient_info.contact.email,
+      });
 
-    if (patientInsert.error) {
-      throw patientInsert.error;
+      if (patientInsert.error) {
+        throw patientInsert.error;
+      }
     }
 
     const encounterInsert = await supabase.from("encounters").insert({
