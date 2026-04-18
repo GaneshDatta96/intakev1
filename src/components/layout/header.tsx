@@ -3,13 +3,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Stethoscope, Users, LayoutDashboard, PlusSquare } from "lucide-react";
+import { Stethoscope, Users, LayoutDashboard } from "lucide-react";
 import clsx from "clsx";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Patients", href: "/patients", icon: Users },
-  { name: "Create Demo", href: "/create-demo", icon: PlusSquare },
   { name: "New Intake", href: "/intake", icon: Stethoscope },
 ];
 

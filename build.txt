@@ -20,3 +20,8 @@ Build Log Initialized.
 - Refreshed dashboard typography and panel styling with a cleaner clinical look using Plus Jakarta Sans and updated spacing.
 - Added a shared footer across the app that reads "created by Ganesh" and links to https://ganeshdatta.me.
 - Verified with npm run lint, npx tsc --noEmit, and npm run build.
+
+[2026-04-18] - chore: Simplify homepage CTA and hide Create Demo nav item
+- Reduced the homepage "Next Step" section to a single Request custom version button.
+- Pointed the Request custom version CTA to https://cal.com/ganesh-datta-bygktk/sales-throughput-session.
+- Removed the Create Demo item from the shared header navigation while keeping the route available.

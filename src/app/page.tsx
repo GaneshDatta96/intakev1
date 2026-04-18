@@ -184,16 +184,10 @@ export default function Home() {
           We tailor the intake flow, structured outputs, and practitioner
           workspace to match how your team actually works.
         </p>
-        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <div className="mt-8 flex justify-center">
           <Link
-            href="#"
-            className="inline-flex items-center justify-center rounded-full bg-[color:var(--foreground)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-92"
-          >
-            Book a walkthrough
-          </Link>
-          <Link
-            href="#"
-            className="inline-flex items-center justify-center rounded-full border border-[color:var(--line-strong)] bg-[color:var(--surface-strong)] px-5 py-3 text-sm font-semibold text-[color:var(--foreground)] transition hover:bg-white"
+            href="https://cal.com/ganesh-datta-bygktk/sales-throughput-session"
+            className="inline-flex items-center justify-center rounded-full bg-[color:var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-92"
           >
             Request custom version
           </Link>
