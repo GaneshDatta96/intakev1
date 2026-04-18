@@ -14,3 +14,9 @@ Build Log Initialized.
 [2026-04-16] - fix: Resolve 400 error on intake submission
 - Aligned the API schema in /api/intake/submit/route.ts to use subjectiveNoteSchema.
 - Added a temporary data transformation in lib/intake/workflow.ts to map the new subjectiveNoteSchema back to the old IntakeFormInput format, ensuring compatibility with the existing processing pipeline.
+
+[2026-04-18] - feat: Widen dashboard and add Ganesh footer
+- Expanded the practitioner dashboard layout to use the full available screen width for large displays.
+- Refreshed dashboard typography and panel styling with a cleaner clinical look using Plus Jakarta Sans and updated spacing.
+- Added a shared footer across the app that reads "created by Ganesh" and links to https://ganeshdatta.me.
+- Verified with npm run lint, npx tsc --noEmit, and npm run build.
