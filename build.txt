@@ -25,3 +25,10 @@ Build Log Initialized.
 - Reduced the homepage "Next Step" section to a single Request custom version button.
 - Pointed the Request custom version CTA to https://cal.com/ganesh-datta-bygktk/sales-throughput-session.
 - Removed the Create Demo item from the shared header navigation while keeping the route available.
+
+[2026-04-18] - feat: Personalize clinic demo routes for faster sales conversion
+- Added clinic-specific demo landing pages that frame each shared route as a version already built for the target clinic.
+- Personalized the hero, context, workflow, outcome, CTA, and signature copy from clinic metadata such as services, location, and consultation style.
+- Embedded patient creation directly into the clinic demo experience and added practitioner-facing SOAP previews tied to the selected niche config.
+- Updated demo creation and orchestration inputs so service and review context flow into the personalized clinic experience.
+- Verified with npm run lint, npx tsc --noEmit, and npm run build.

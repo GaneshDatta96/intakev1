@@ -6,6 +6,8 @@ const createPatientSchema = z.object({
   first_name: z.string().trim().min(1),
   last_name: z.string().trim().min(1),
   email: z.string().trim().email(),
+  clinic_id: z.string().uuid().optional(),
+  clinic_slug: z.string().trim().optional(),
 });
 
 export async function POST(request: Request) {
@@ -21,7 +23,8 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { first_name, last_name, email } = createPatientSchema.parse(body);
+    const { first_name, last_name, email, clinic_id, clinic_slug } =
+      createPatientSchema.parse(body);
     const fallbackPatient = {
       id: crypto.randomUUID(),
       first_name,
@@ -51,14 +54,59 @@ export async function POST(request: Request) {
     }
 
     try {
+      if (clinic_id) {
+        const newSchemaInsert = await supabase
+          .from("patients")
+          .insert([
+            {
+              clinic_id,
+              name: `${first_name} ${last_name}`.trim(),
+              email,
+              phone: null,
+            },
+          ])
+          .select("id, name, email, created_at")
+          .single();
+
+        if (!newSchemaInsert.error && newSchemaInsert.data) {
+          logInfo({
+            ...requestLog,
+            message: "route.complete",
+            step: "patient_create",
+            status: "ok",
+            latency_ms: Date.now() - startedAt,
+            metadata: {
+              persisted: true,
+              schema_mode: "tenant_patients",
+              clinic_id,
+              clinic_slug: clinic_slug ?? null,
+            },
+          });
+
+          const [createdFirstName = first_name, ...rest] =
+            newSchemaInsert.data.name?.trim().split(/\s+/) ?? [];
+
+          return Response.json(
+            {
+              id: newSchemaInsert.data.id,
+              first_name: createdFirstName,
+              last_name: rest.join(" ") || last_name,
+              email: newSchemaInsert.data.email ?? email,
+              created_at: newSchemaInsert.data.created_at ?? new Date().toISOString(),
+            },
+            { status: 201 },
+          );
+        }
+      }
+
       const { data, error } = await supabase
         .from("patients")
         .insert([{ first_name, last_name, email }])
         .select()
         .single();
 
-      if (error) {
-        throw error;
+      if (error || !data) {
+        throw error ?? new Error("Patient insert failed.");
       }
 
       logInfo({
@@ -69,10 +117,21 @@ export async function POST(request: Request) {
         latency_ms: Date.now() - startedAt,
         metadata: {
           persisted: true,
+          schema_mode: "legacy_patients",
+          clinic_slug: clinic_slug ?? null,
         },
       });
 
-      return Response.json(data, { status: 201 });
+      return Response.json(
+        {
+          id: data.id,
+          first_name: data.first_name ?? first_name,
+          last_name: data.last_name ?? last_name,
+          email: data.email ?? email,
+          created_at: data.created_at ?? new Date().toISOString(),
+        },
+        { status: 201 },
+      );
     } catch (error) {
       const normalizedError =
         error instanceof Error
@@ -88,6 +147,7 @@ export async function POST(request: Request) {
         metadata: {
           reason: "Patient insert failed. Returning ephemeral patient record.",
           persisted: false,
+          clinic_slug: clinic_slug ?? null,
           error_name: normalizedError.name,
           error_message: normalizedError.message,
         },

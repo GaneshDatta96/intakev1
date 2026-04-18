@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { type ClinicDefinition } from "@/lib/clinics/niche-configs";
 
 const patientSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -14,47 +15,75 @@ const patientSchema = z.object({
 
 export type PatientDetails = z.infer<typeof patientSchema> & { id: string };
 
-export function PatientCreationForm({ setPatient }: { setPatient: (patient: PatientDetails) => void }) {
+export function PatientCreationForm(props: {
+  clinic: ClinicDefinition;
+  embedded?: boolean;
+  setPatient: (patient: PatientDetails) => void;
+  showOverview?: boolean;
+}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const showOverview = props.showOverview ?? !props.embedded;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof patientSchema>>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<z.infer<typeof patientSchema>>({
     resolver: zodResolver(patientSchema),
   });
 
   const onSubmit = async (values: z.infer<typeof patientSchema>) => {
     setIsSubmitting(true);
     setError(null);
+
     try {
       const response = await fetch("/api/patients/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          clinic_id: props.clinic.id,
+          clinic_slug: props.clinic.slug,
+        }),
       });
-      const data = await response.json();
-      if (!response.ok) {
+      const data = (await response.json()) as { id?: string; error?: string };
+
+      if (!response.ok || !data.id) {
         throw new Error(data.error || "Failed to create patient.");
       }
-      setPatient({ ...values, id: data.id });
+
+      props.setPatient({ ...values, id: data.id });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred.");
     }
+
     setIsSubmitting(false);
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-12">
-      <section className="glass-panel rounded-[2rem] p-6 sm:p-8">
-        <div className="space-y-2">
-          <p className="section-label">New Patient</p>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Create a Patient Record
-          </h1>
-          <p className="max-w-3xl leading-7 text-[color:var(--muted)]">
-            First, let&apos;s create a patient record to associate with this intake.
-          </p>
-        </div>
-      </section>
+    <div
+      className={
+        props.embedded
+          ? "flex w-full flex-col gap-6"
+          : "mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-12"
+      }
+    >
+      {showOverview ? (
+        <section className="glass-panel rounded-[2rem] p-6 sm:p-8">
+          <div className="space-y-2">
+            <p className="section-label">{props.clinic.clinicName}</p>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              Create a Patient Record
+            </h1>
+            <p className="max-w-3xl leading-7 text-[color:var(--muted)]">
+              First, let&apos;s create a patient record for this{" "}
+              {props.clinic.config.label.toLowerCase()} intake flow.
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       <section className="glass-panel rounded-[2rem] p-6 sm:p-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Field label="First Name" error={errors.first_name?.message}>
@@ -66,10 +95,22 @@ export function PatientCreationForm({ setPatient }: { setPatient: (patient: Pati
           <Field label="Email Address" error={errors.email?.message}>
             <input {...register("email")} className={inputClassName} />
           </Field>
-          <button type="submit" disabled={isSubmitting} className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-md hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
-            {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : "Create Patient"}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--accent)] px-4 py-3 text-sm font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              "Create Patient"
+            )}
           </button>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          {error ? (
+            <p className="text-sm text-[color:var(--danger)]">{error}</p>
+          ) : null}
         </form>
       </section>
     </div>
@@ -83,14 +124,14 @@ function Field(props: {
 }) {
   return (
     <label className="grid gap-2">
-      <span className="font-medium text-gray-800">{props.label}</span>
+      <span className="font-medium text-[color:var(--foreground)]">{props.label}</span>
       {props.children}
-      {props.error && (
-        <span className="text-sm text-red-600">{props.error}</span>
-      )}
+      {props.error ? (
+        <span className="text-sm text-[color:var(--danger)]">{props.error}</span>
+      ) : null}
     </label>
   );
 }
 
 const inputClassName =
-  "w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-base text-gray-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50";
+  "w-full rounded-2xl border border-[color:var(--line)] bg-white px-4 py-3 text-base text-[color:var(--foreground)] outline-none transition focus:border-[color:var(--accent)] focus:ring-2 focus:ring-[color:var(--accent)]/20";

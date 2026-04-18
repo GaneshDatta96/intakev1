@@ -3,10 +3,14 @@ import {
   type AssessmentResult,
   type SoapDraft,
 } from "@/lib/schemas/soap";
+import { type ClinicDefinition } from "@/lib/clinics/niche-configs";
+import {
+  buildSoapSectionLine,
+  type NicheSoapContext,
+} from "@/lib/intake/niche-intake";
 import { type NormalizedIntake } from "@/lib/schemas/intake";
-import { type PatientIntakeQuestionnaire } from "@/lib/schemas/modern-soap";
 
-const PROMPT_VERSION = "soap_v1";
+const PROMPT_VERSION = "soap_v2_niche_config";
 
 const SYSTEM_PROMPT = `You are a clinical documentation assistant for a US outpatient wellness clinic.
 Generate a SOAP note from structured intake and structured assessment results.
@@ -15,13 +19,14 @@ Rules:
 - Do not provide a definitive diagnosis.
 - Do not prescribe medications, supplements, or treatment regimens.
 - Use strong but non-diagnostic clinical language.
+- Follow the clinic's SOAP template to decide what belongs in S, O, and A.
 - Examples:
   - "Findings are consistent with..."
   - "Pattern suggests..."
   - "Presentation may reflect..."
 - The Objective section must be limited to facts explicitly present in the intake or assessment inputs.
 - If no exam, labs, or vitals are provided, say so clearly.
-- The Plan section must be brief and editable by the clinician, not a finalized treatment plan.
+- The Plan section must stay brief, clearly provisional, and easy for the clinician to edit manually.
 
 Return JSON with:
 {
@@ -41,8 +46,145 @@ function joinSentence(items: string[]) {
 export function buildFallbackSoap(
   intake: NormalizedIntake,
   assessmentResults: AssessmentResult[],
-  questionnaire?: PatientIntakeQuestionnaire,
+  clinic?: ClinicDefinition,
+  soapContext?: NicheSoapContext,
 ): SoapDraft {
+  if (clinic && soapContext) {
+    return buildConfiguredFallbackSoap(intake, assessmentResults, clinic, soapContext);
+  }
+
+  return buildDefaultFallbackSoap(intake, assessmentResults);
+}
+
+function buildConfiguredFallbackSoap(
+  intake: NormalizedIntake,
+  assessmentResults: AssessmentResult[],
+  clinic: ClinicDefinition,
+  soapContext: NicheSoapContext,
+) {
+  const topPattern = assessmentResults[0];
+  const subjective = clinic.config.soap.S
+    .map((bullet) => buildSoapSectionLine(bullet, soapContext.answeredQuestions))
+    .join(" ");
+
+  const objective = clinic.config.soap.O
+    .map((bullet) => buildObjectiveLine(bullet, intake, soapContext))
+    .join(" ");
+
+  const assessment = clinic.config.soap.A
+    .map((bullet) => buildAssessmentLine(bullet, intake, assessmentResults, soapContext))
+    .join(" ");
+
+  const planLines =
+    clinic.config.soap.P.length > 0
+      ? clinic.config.soap.P.map(
+          (item) => `- ${item}: clinician to complete after review.`,
+        )
+      : [
+          "- Plan intentionally left manual for clinician review.",
+          "- Confirm history, exam findings, and final treatment decisions during the visit.",
+        ];
+
+  return soapDraftSchema.parse({
+    subjective:
+      subjective ||
+      `Submitted ${clinic.config.label.toLowerCase()} intake centers on ${intake.chief_complaint.primary_issue.toLowerCase()}.`,
+    objective:
+      objective ||
+      "Objective is limited to patient-reported intake information gathered before the visit.",
+    assessment:
+      assessment ||
+      (topPattern
+        ? `Leading working impression suggests ${topPattern.label.toLowerCase()} with clinician correlation still required.`
+        : "Initial assessment remains broad and should be refined during clinician review."),
+    plan_draft: ["Manual Plan", ...planLines].join("\n"),
+  });
+}
+
+function buildObjectiveLine(
+  bullet: string,
+  intake: NormalizedIntake,
+  soapContext: NicheSoapContext,
+) {
+  const normalizedBullet = bullet.toLowerCase();
+
+  if (normalizedBullet.includes("vital")) {
+    return `Reported vitals or measurable self-reported values include symptom severity ${intake.chief_complaint.severity_0_10}/10, sleep "${intake.lifestyle.sleep}", and stress "${intake.lifestyle.stress}".`;
+  }
+
+  if (normalizedBullet.includes("skin")) {
+    return buildSoapSectionLine(bullet, soapContext.answeredQuestions);
+  }
+
+  if (normalizedBullet.includes("mobility")) {
+    return buildSoapSectionLine(bullet, soapContext.answeredQuestions);
+  }
+
+  if (normalizedBullet.includes("behavior") || normalizedBullet.includes("pattern")) {
+    return `Observed from intake structure: ${intake.symptoms.length} symptom cluster(s) and ${intake.goals.patient_priorities.length} stated priority item(s) were reported by the patient.`;
+  }
+
+  if (normalizedBullet.includes("visible")) {
+    return buildSoapSectionLine(bullet, soapContext.answeredQuestions);
+  }
+
+  return buildSoapSectionLine(bullet, soapContext.answeredQuestions);
+}
+
+function buildAssessmentLine(
+  bullet: string,
+  intake: NormalizedIntake,
+  assessmentResults: AssessmentResult[],
+  soapContext: NicheSoapContext,
+) {
+  const normalizedBullet = bullet.toLowerCase();
+  const topPattern = assessmentResults[0];
+
+  if (normalizedBullet.includes("risk")) {
+    return intake.red_flags.length > 0
+      ? `Risk flags: reported red flag items include ${joinSentence(intake.red_flags.map((flag) => flag.replaceAll("_", " ")))} and should be reviewed promptly.`
+      : "Risk flags: no urgent red flag terms were identified from the submitted intake.";
+  }
+
+  if (normalizedBullet.includes("severity")) {
+    return `Severity classification: patient-reported severity is ${intake.chief_complaint.severity_0_10}/10 with current workflow priority considered ${topPattern?.risk_level.replaceAll("_", " ") ?? "routine"}.`;
+  }
+
+  if (normalizedBullet.includes("chronic") || normalizedBullet.includes("acute")) {
+    return `Chronicity assessment: reported duration is ${intake.chief_complaint.duration.toLowerCase()}, which should be interpreted in the context of onset and functional impact.`;
+  }
+
+  if (normalizedBullet.includes("pattern")) {
+    return topPattern
+      ? `${sentenceCase(bullet)}: leading intake pattern suggests ${topPattern.label.toLowerCase()} with confidence ${topPattern.confidence.toFixed(2)}.`
+      : `${sentenceCase(bullet)}: intake remains nonspecific and needs clinician correlation.`;
+  }
+
+  if (normalizedBullet.includes("lifestyle")) {
+    return `Lifestyle contributors: diet is documented as "${intake.lifestyle.diet}", sleep as "${intake.lifestyle.sleep}", and stress as "${intake.lifestyle.stress}".`;
+  }
+
+  if (normalizedBullet.includes("expectation")) {
+    return intake.goals.expectations
+      ? `Expectation alignment: patient-stated goals and timing preferences center on ${intake.goals.expectations.toLowerCase()}.`
+      : "Expectation alignment: patient expectations should be clarified during clinical review.";
+  }
+
+  if (normalizedBullet.includes("suitability")) {
+    return "Suitability for aesthetic procedures should be confirmed after clinician review of goals, history, and contraindication screening.";
+  }
+
+  if (normalizedBullet.includes("stress-digestion")) {
+    return `Stress-digestion link: stress is reported as "${intake.lifestyle.stress}" and digestive context should be interpreted alongside the submitted symptom profile.`;
+  }
+
+  return buildSoapSectionLine(bullet, soapContext.answeredQuestions);
+}
+
+function buildDefaultFallbackSoap(
+  intake: NormalizedIntake,
+  assessmentResults: AssessmentResult[],
+) {
   const symptomLabels = intake.symptoms
     .slice(0, 5)
     .map((item) => item.label.toLowerCase());
@@ -66,22 +208,9 @@ export function buildFallbackSoap(
     .filter(Boolean)
     .join(" ");
 
-  const objectiveFromQuestionnaire = questionnaire
-    ? [
-        `Patient-reported demographics include age ${questionnaire.objective.demographics.age}, sex at birth ${questionnaire.objective.demographics.sex_at_birth.toLowerCase()}, and gender identity ${questionnaire.objective.demographics.gender_identity.toLowerCase()}.`,
-        `Patient-reported vitals include height ${questionnaire.objective.vitals.height}, weight ${questionnaire.objective.vitals.weight}, blood pressure ${questionnaire.objective.vitals.blood_pressure}, and heart rate ${questionnaire.objective.vitals.heart_rate}.`,
-        `Patient-reported physical exam information: ${questionnaire.objective.physical_exam.summary}.`,
-        `Patient-reported labs and imaging: ${questionnaire.objective.labs_and_imaging.summary}.`,
-        `Patient-reported risk scores: ${questionnaire.objective.risk_scores.summary}.`,
-      ]
-    : [];
-
   const objective = [
-    questionnaire
-      ? "Objective includes patient-reported demographic and clinical data supplied through the intake."
-      : "Objective is limited to intake-derived information only.",
+    "Objective is limited to intake-derived information only.",
     `Reported symptom severity is ${intake.chief_complaint.severity_0_10}/10.`,
-    ...objectiveFromQuestionnaire,
     intake.red_flags.length > 0
       ? `Reported red flag items requiring clinician review include ${joinSentence(intake.red_flags.map((flag) => flag.replaceAll("_", " ")))}.`
       : "No additional red flag items were identified from the submitted intake.",
@@ -125,6 +254,14 @@ export function buildFallbackSoap(
   });
 }
 
+function sentenceCase(value: string) {
+  if (!value) {
+    return value;
+  }
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 function extractJsonContent(content: unknown) {
   if (typeof content === "string") {
     return JSON.parse(content);
@@ -150,9 +287,10 @@ function extractJsonContent(content: unknown) {
 export async function generateSoapDraft(args: {
   intake: NormalizedIntake;
   assessmentResults: AssessmentResult[];
-  questionnaire?: PatientIntakeQuestionnaire;
+  clinic?: ClinicDefinition;
+  soapContext?: NicheSoapContext;
 }) {
-  const { intake, assessmentResults, questionnaire } = args;
+  const { intake, assessmentResults, clinic, soapContext } = args;
   const apiKey = process.env.OPENROUTER_API_KEY;
   const model = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini";
 
@@ -161,7 +299,7 @@ export async function generateSoapDraft(args: {
       promptVersion: PROMPT_VERSION,
       model: "fallback/local-template",
       usedFallback: true,
-      soap: buildFallbackSoap(intake, assessmentResults, questionnaire),
+      soap: buildFallbackSoap(intake, assessmentResults, clinic, soapContext),
     };
   }
 
@@ -190,11 +328,22 @@ export async function generateSoapDraft(args: {
               assessmentResults,
               null,
               2,
-            )}\n\nQUESTIONNAIRE_JSON:\n${JSON.stringify(
-              questionnaire ?? null,
+            )}\n\nCLINIC_CONFIG:\n${JSON.stringify(
+              clinic
+                ? {
+                    slug: clinic.slug,
+                    niche: clinic.niche,
+                    label: clinic.config.label,
+                    soap: clinic.config.soap,
+                  }
+                : null,
               null,
               2,
-            )}\n\nTASK:\nWrite Subjective, Objective, Assessment, and a minimal editable plan draft.`,
+            )}\n\nSOAP_CONTEXT:\n${JSON.stringify(
+              soapContext ?? null,
+              null,
+              2,
+            )}\n\nTASK:\nWrite Subjective, Objective, Assessment, and a minimal editable plan draft. Use the clinic SOAP config as the section coverage guide. Keep Plan obviously provisional for clinician editing.`,
           },
         ],
         response_format: {
@@ -244,7 +393,7 @@ export async function generateSoapDraft(args: {
       promptVersion: PROMPT_VERSION,
       model: "fallback/local-template",
       usedFallback: true,
-      soap: buildFallbackSoap(intake, assessmentResults, questionnaire),
+      soap: buildFallbackSoap(intake, assessmentResults, clinic, soapContext),
     };
   }
 }

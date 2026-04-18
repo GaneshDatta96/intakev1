@@ -31,7 +31,7 @@ export const intakeFormSchema = z.object({
   patient_info: z.object({
     first_name: z.string().trim().min(1, "First name is required."),
     last_name: z.string().trim().min(1, "Last name is required."),
-    age: z.number().int().min(0).max(120),
+    age: z.number().int().min(0).max(120).nullable().default(null),
     sex_at_birth: z.string().trim().min(1, "Sex at birth is required."),
     gender_identity: z.string().trim().default(""),
     phone: z.string().trim().default(""),
@@ -91,7 +91,7 @@ export const normalizedIntakeSchema = z.object({
   patient_info: z.object({
     first_name: z.string(),
     last_name: z.string(),
-    age: z.number().int(),
+    age: z.number().int().nullable(),
     sex_at_birth: z.string(),
     gender_identity: z.string(),
     contact: z.object({

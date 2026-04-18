@@ -180,7 +180,7 @@ export function scorePatterns(input: NormalizedIntake): AssessmentResult[] {
         matchedRedFlags.length > 0
           ? "urgent_review"
           : intake.chief_complaint.severity_0_10 >= 8 ||
-              intake.patient_info.age >= 65
+              (intake.patient_info.age !== null && intake.patient_info.age >= 65)
             ? "priority"
             : "routine";
 

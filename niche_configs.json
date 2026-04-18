@@ -1,0 +1,296 @@
+{
+  "functional_medicine": {
+    "label": "Functional Medicine",
+    "questionnaire": [
+      {
+        "key": "chief_complaint",
+        "question": "What are your main health concerns?",
+        "type": "text"
+      },
+      {
+        "key": "duration",
+        "question": "How long have you been experiencing this?",
+        "type": "select",
+        "options": ["<1 month", "1-6 months", "6-12 months", "1+ years"]
+      },
+      {
+        "key": "symptoms",
+        "question": "Select your symptoms",
+        "type": "multi",
+        "options": [
+          "Fatigue",
+          "Digestive issues",
+          "Brain fog",
+          "Hormonal imbalance",
+          "Sleep issues"
+        ]
+      },
+      {
+        "key": "medical_history",
+        "question": "Any diagnosed conditions?",
+        "type": "text"
+      },
+      {
+        "key": "medications",
+        "question": "Current medications or supplements?",
+        "type": "text"
+      },
+      {
+        "key": "diet",
+        "question": "Describe your diet",
+        "type": "text"
+      },
+      {
+        "key": "sleep",
+        "question": "Sleep quality",
+        "type": "scale",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "key": "stress",
+        "question": "Stress level",
+        "type": "scale",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "key": "goals",
+        "question": "What are your health goals?",
+        "type": "text"
+      }
+    ],
+    "soap": {
+      "S": [
+        "Chief complaint",
+        "Symptom timeline",
+        "Lifestyle factors",
+        "Medical history"
+      ],
+      "O": ["Reported vitals (if any)", "Patterns from intake"],
+      "A": [
+        "Functional imbalance patterns",
+        "Lifestyle contributors",
+        "Chronicity assessment",
+        "Risk flags"
+      ],
+      "P": []
+    }
+  },
+  "chiropractor": {
+    "label": "Chiropractic",
+    "questionnaire": [
+      {
+        "key": "pain_location",
+        "question": "Where is your pain located?",
+        "type": "multi",
+        "options": ["Neck", "Back", "Lower back", "Shoulder", "Head"]
+      },
+      {
+        "key": "pain_severity",
+        "question": "Pain level (1-10)",
+        "type": "scale",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "key": "duration",
+        "question": "How long have you had this pain?",
+        "type": "select",
+        "options": ["<1 week", "1-4 weeks", "1-6 months", "6+ months"]
+      },
+      {
+        "key": "trigger",
+        "question": "What caused it?",
+        "type": "text"
+      },
+      {
+        "key": "mobility",
+        "question": "Any movement restrictions?",
+        "type": "text"
+      },
+      {
+        "key": "injury_history",
+        "question": "Past injuries?",
+        "type": "text"
+      },
+      {
+        "key": "work_style",
+        "question": "Work type",
+        "type": "select",
+        "options": ["Desk job", "Physical work", "Mixed"]
+      },
+      {
+        "key": "goals",
+        "question": "What do you want to improve?",
+        "type": "text"
+      }
+    ],
+    "soap": {
+      "S": [
+        "Pain description",
+        "Onset and duration",
+        "Functional limitations"
+      ],
+      "O": ["Postural indicators (inferred)", "Mobility issues"],
+      "A": [
+        "Musculoskeletal dysfunction pattern",
+        "Severity classification",
+        "Chronic vs acute"
+      ],
+      "P": []
+    }
+  },
+  "aesthetic_clinic": {
+    "label": "Aesthetic / Med Spa",
+    "questionnaire": [
+      {
+        "key": "concern",
+        "question": "What is your primary aesthetic concern?",
+        "type": "multi",
+        "options": [
+          "Wrinkles",
+          "Acne",
+          "Pigmentation",
+          "Hair removal",
+          "Body contouring"
+        ]
+      },
+      {
+        "key": "treatment_history",
+        "question": "Have you had treatments before?",
+        "type": "select",
+        "options": ["Yes", "No"]
+      },
+      {
+        "key": "skin_type",
+        "question": "Skin type",
+        "type": "select",
+        "options": ["Dry", "Oily", "Combination", "Sensitive"]
+      },
+      {
+        "key": "allergies",
+        "question": "Any allergies or reactions?",
+        "type": "text"
+      },
+      {
+        "key": "goals",
+        "question": "Desired outcome",
+        "type": "text"
+      },
+      {
+        "key": "timeline",
+        "question": "When do you want results?",
+        "type": "select",
+        "options": ["ASAP", "1-3 months", "Flexible"]
+      }
+    ],
+    "soap": {
+      "S": ["Aesthetic concern", "Treatment expectations", "History"],
+      "O": ["Skin condition (self-reported)", "Visible concerns"],
+      "A": [
+        "Suitability for aesthetic procedures",
+        "Risk considerations",
+        "Expectation alignment"
+      ],
+      "P": []
+    }
+  },
+  "holistic": {
+    "label": "Holistic / Ayurveda",
+    "questionnaire": [
+      {
+        "key": "chief_issue",
+        "question": "What imbalance are you experiencing?",
+        "type": "text"
+      },
+      {
+        "key": "energy_level",
+        "question": "Energy level",
+        "type": "scale",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "key": "digestion",
+        "question": "Digestive health",
+        "type": "select",
+        "options": ["Good", "Irregular", "Poor"]
+      },
+      {
+        "key": "sleep",
+        "question": "Sleep quality",
+        "type": "scale",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "key": "stress",
+        "question": "Stress level",
+        "type": "scale",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "key": "lifestyle",
+        "question": "Describe your daily routine",
+        "type": "text"
+      },
+      {
+        "key": "goals",
+        "question": "What balance are you seeking?",
+        "type": "text"
+      }
+    ],
+    "soap": {
+      "S": [
+        "Reported imbalance",
+        "Lifestyle factors",
+        "Emotional state"
+      ],
+      "O": ["Behavioral patterns", "Energy indicators"],
+      "A": [
+        "Mind-body imbalance pattern",
+        "Stress-digestion link",
+        "Lifestyle contributors"
+      ],
+      "P": []
+    }
+  },
+  "general_practice": {
+    "label": "General Practice",
+    "questionnaire": [
+      {
+        "key": "chief_complaint",
+        "question": "What brings you in today?",
+        "type": "text"
+      },
+      {
+        "key": "duration",
+        "question": "How long has this been happening?",
+        "type": "text"
+      },
+      {
+        "key": "symptoms",
+        "question": "Describe your symptoms",
+        "type": "text"
+      },
+      {
+        "key": "history",
+        "question": "Relevant medical history",
+        "type": "text"
+      },
+      {
+        "key": "medications",
+        "question": "Current medications",
+        "type": "text"
+      }
+    ],
+    "soap": {
+      "S": ["Chief complaint", "HPI", "Symptoms"],
+      "O": ["Basic observations"],
+      "A": ["Preliminary clinical impression"],
+      "P": []
+    }
+  }
+}
