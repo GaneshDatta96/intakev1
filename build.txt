@@ -32,3 +32,10 @@ Build Log Initialized.
 - Embedded patient creation directly into the clinic demo experience and added practitioner-facing SOAP previews tied to the selected niche config.
 - Updated demo creation and orchestration inputs so service and review context flow into the personalized clinic experience.
 - Verified with npm run lint, npx tsc --noEmit, and npm run build.
+
+[2026-05-06] - feat: Add aurora hero/button UI and shadcn CLI config
+- Added src/components/ui/aurora-button.tsx and src/components/ui/aurora-button-demo.tsx for a reusable glowing CTA button with configurable gradient glow.
+- Added src/components/ui/aurora-background-demo.tsx and integrated it into src/app/page.tsx as the homepage hero.
+- Updated src/components/ui/aurora-background.tsx to better fit the app layout and current Next.js client-component usage.
+- Added components.json so the shadcn CLI understands the src-based component aliases and src/app/globals.css stylesheet path.
+- Verified with npm run lint, npm run typecheck, and npm run build.
